@@ -1,0 +1,185 @@
+{
+  "projectType": "saas",
+  "projectName": "Stoic Calendar",
+  "projectDescription": "A minimalist iOS/Android app that visualizes time passage through Stoic-inspired grid timelines, helping users make time tangible and visible.",
+  "theme": "willow",
+  "primaryColor": "#4A90E2",
+  "lightColor": "#E6F4FE",
+  "darkColor": "#1A1A2E",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/timelines",
+              "concepts/grid-visualization",
+              "concepts/design-philosophy"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/timeline-types",
+              "features/widgets",
+              "features/themes",
+              "features/subscriptions"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/creating-timelines",
+              "guides/managing-timelines",
+              "guides/customizing-appearance"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Architecture",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "architecture/overview",
+              "architecture/tech-stack",
+              "architecture/file-structure"
+            ]
+          },
+          {
+            "group": "Data Layer",
+            "pages": [
+              "architecture/data-model",
+              "architecture/storage",
+              "architecture/timeline-calculator"
+            ]
+          },
+          {
+            "group": "UI Components",
+            "pages": [
+              "architecture/components",
+              "architecture/routing",
+              "architecture/theme-system"
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "architecture/widget-service",
+              "architecture/revenue-cat",
+              "architecture/firebase-integration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/timeline",
+              "api/types/settings"
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "api/services/storage",
+              "api/services/timeline-calculator",
+              "api/services/widget-data"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utils/date-helpers",
+              "api/utils/grid-layout"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "api/components/stoic-grid",
+              "api/components/timeline-card",
+              "api/components/timeline-form"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "development/setup",
+              "development/commands",
+              "development/environment"
+            ]
+          },
+          {
+            "group": "Building",
+            "pages": [
+              "development/building-ios",
+              "development/building-android",
+              "development/testing"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "development/code-style",
+              "development/workflow",
+              "development/roadmap"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Four timeline types: Year, Month, Week, and Custom date ranges",
+    "Stoic grid visualization where each dot represents one day",
+    "iOS home screen and lock screen widgets for at-a-glance time tracking",
+    "Dark-mode-first design with multiple color themes",
+    "Local-first data storage with AsyncStorage",
+    "Auto-updating Week timelines that refresh to current week",
+    "RevenueCat integration for premium subscription features",
+    "Firebase-ready data structure for future cloud sync",
+    "Expo Router file-based navigation system",
+    "Custom native iOS module for App Groups widget data sharing"
+  ],
+  "publicApiSurface": [
+    "Timeline (interface): Core data model for all timeline types",
+    "TimelineType (enum): YEAR, MONTH, WEEK, CUSTOM",
+    "AppSettings (interface): User preferences for theme and grid colors",
+    "loadTimelines(): Load all timelines from AsyncStorage",
+    "saveTimeline(timeline): Save or update a timeline",
+    "getActiveTimeline(): Get the currently active timeline",
+    "setActiveTimeline(id): Set a timeline as active",
+    "deleteTimeline(id): Delete a timeline by ID",
+    "createTimeline(type, options): Create a new timeline object",
+    "calculateTimelineStats(timeline): Calculate days passed/remaining/total",
+    "updateTimelineIfNeeded(timeline): Auto-update week/month/year timelines",
+    "getDaysPassed(startDate, endDate): Calculate days passed",
+    "getTotalDays(startDate, endDate): Calculate total days in range",
+    "getProgressPercentage(startDate, endDate): Calculate 0-100 progress",
+    "StoicGrid (component): Grid visualization component",
+    "TimelineCard (component): Timeline list item with progress",
+    "TimelineFormDrawer (component): Timeline creation/editing form",
+    "syncActiveTimelineToWidget(): Sync active timeline to iOS widgets",
+    "isPro(): Check if user has premium subscription"
+  ]
+}
