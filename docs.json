@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Stoic Calendar",
+  "name": "Memento Calendar",
   "theme": "willow",
   "colors": {
     "primary": "#4A90E2",
