@@ -1,0 +1,766 @@
+---
+title: "Date Helpers"
+description: "Date manipulation utility functions for Stoic Calendar"
+---
+
+Pure functions for date calculations in Stoic Calendar. All dates use ISO 8601 format strings for consistency and Firebase compatibility. Week starts on Monday (ISO 8601 standard).
+
+## Core Date Functions
+
+### getStartOfToday
+
+Get the start of today (00:00:00).
+
+```typescript
+function getStartOfToday(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to today at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfToday } from '@/utils/date-helpers';
+
+const todayStart = getStartOfToday();
+console.log(todayStart); // 2026-03-03T00:00:00.000Z
+```
+
+### getEndOfToday
+
+Get the end of today (23:59:59.999).
+
+```typescript
+function getEndOfToday(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to today at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfToday } from '@/utils/date-helpers';
+
+const todayEnd = getEndOfToday();
+console.log(todayEnd); // 2026-03-03T23:59:59.999Z
+```
+
+### getStartOfDate
+
+Get the start of a specific date (00:00:00).
+
+```typescript
+function getStartOfDate(date: Date): Date
+```
+
+<ParamField path="date" type="Date" required>
+  The date to get the start of
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  New Date object set to the start of the specified date
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfDate } from '@/utils/date-helpers';
+
+const someDate = new Date('2026-03-15T14:30:00');
+const startOfDate = getStartOfDate(someDate);
+console.log(startOfDate); // 2026-03-15T00:00:00.000Z
+```
+
+### getEndOfDate
+
+Get the end of a specific date (23:59:59.999).
+
+```typescript
+function getEndOfDate(date: Date): Date
+```
+
+<ParamField path="date" type="Date" required>
+  The date to get the end of
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  New Date object set to the end of the specified date
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfDate } from '@/utils/date-helpers';
+
+const someDate = new Date('2026-03-15T14:30:00');
+const endOfDate = getEndOfDate(someDate);
+console.log(endOfDate); // 2026-03-15T23:59:59.999Z
+```
+
+## Year Functions
+
+### getStartOfCurrentYear
+
+Get the start of the current year.
+
+```typescript
+function getStartOfCurrentYear(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to January 1 of the current year at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfCurrentYear } from '@/utils/date-helpers';
+
+const yearStart = getStartOfCurrentYear();
+console.log(yearStart); // 2026-01-01T00:00:00.000Z
+```
+
+### getEndOfCurrentYear
+
+Get the end of the current year.
+
+```typescript
+function getEndOfCurrentYear(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to December 31 of the current year at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfCurrentYear } from '@/utils/date-helpers';
+
+const yearEnd = getEndOfCurrentYear();
+console.log(yearEnd); // 2026-12-31T23:59:59.999Z
+```
+
+### getStartOfYear
+
+Get the start of a specific year.
+
+```typescript
+function getStartOfYear(year: number): Date
+```
+
+<ParamField path="year" type="number" required>
+  The year (e.g., 2026)
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  Date object set to January 1 of the specified year at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfYear } from '@/utils/date-helpers';
+
+const start2025 = getStartOfYear(2025);
+console.log(start2025); // 2025-01-01T00:00:00.000Z
+```
+
+### getEndOfYear
+
+Get the end of a specific year.
+
+```typescript
+function getEndOfYear(year: number): Date
+```
+
+<ParamField path="year" type="number" required>
+  The year (e.g., 2026)
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  Date object set to December 31 of the specified year at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfYear } from '@/utils/date-helpers';
+
+const end2025 = getEndOfYear(2025);
+console.log(end2025); // 2025-12-31T23:59:59.999Z
+```
+
+## Month Functions
+
+### getStartOfCurrentMonth
+
+Get the start of the current month.
+
+```typescript
+function getStartOfCurrentMonth(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to the 1st day of the current month at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfCurrentMonth } from '@/utils/date-helpers';
+
+const monthStart = getStartOfCurrentMonth();
+console.log(monthStart); // 2026-03-01T00:00:00.000Z
+```
+
+### getEndOfCurrentMonth
+
+Get the end of the current month.
+
+```typescript
+function getEndOfCurrentMonth(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to the last day of the current month at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfCurrentMonth } from '@/utils/date-helpers';
+
+const monthEnd = getEndOfCurrentMonth();
+console.log(monthEnd); // 2026-03-31T23:59:59.999Z
+```
+
+### getStartOfMonth
+
+Get the start of a specific month.
+
+```typescript
+function getStartOfMonth(year: number, month: number): Date
+```
+
+<ParamField path="year" type="number" required>
+  The year (e.g., 2026)
+</ParamField>
+
+<ParamField path="month" type="number" required>
+  The month (0-11, where 0 = January)
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  Date object set to the 1st day of the specified month at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfMonth } from '@/utils/date-helpers';
+
+const janStart = getStartOfMonth(2026, 0); // January 2026
+console.log(janStart); // 2026-01-01T00:00:00.000Z
+```
+
+### getEndOfMonth
+
+Get the end of a specific month.
+
+```typescript
+function getEndOfMonth(year: number, month: number): Date
+```
+
+<ParamField path="year" type="number" required>
+  The year (e.g., 2026)
+</ParamField>
+
+<ParamField path="month" type="number" required>
+  The month (0-11, where 0 = January)
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  Date object set to the last day of the specified month at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfMonth } from '@/utils/date-helpers';
+
+const janEnd = getEndOfMonth(2026, 0); // January 2026
+console.log(janEnd); // 2026-01-31T23:59:59.999Z
+```
+
+## Week Functions
+
+### getStartOfCurrentWeek
+
+Get the start of the current week (Monday, ISO 8601).
+
+```typescript
+function getStartOfCurrentWeek(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to Monday of the current week at 00:00:00
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getStartOfCurrentWeek } from '@/utils/date-helpers';
+
+const weekStart = getStartOfCurrentWeek();
+console.log(weekStart); // 2026-03-02T00:00:00.000Z (Monday)
+```
+
+### getEndOfCurrentWeek
+
+Get the end of the current week (Sunday, ISO 8601).
+
+```typescript
+function getEndOfCurrentWeek(): Date
+```
+
+<ResponseField name="return" type="Date">
+  Date object set to Sunday of the current week at 23:59:59.999
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getEndOfCurrentWeek } from '@/utils/date-helpers';
+
+const weekEnd = getEndOfCurrentWeek();
+console.log(weekEnd); // 2026-03-08T23:59:59.999Z (Sunday)
+```
+
+## Timeline Calculation Functions
+
+### getDaysBetween
+
+Calculate the number of days between two dates (inclusive).
+
+```typescript
+function getDaysBetween(startDate: Date | string, endDate: Date | string): number
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Start date (Date object or ISO 8601 string)
+</ParamField>
+
+<ParamField path="endDate" type="Date | string" required>
+  End date (Date object or ISO 8601 string)
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Number of days between dates (inclusive). Example: Jan 1 to Jan 3 = 3 days
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getDaysBetween } from '@/utils/date-helpers';
+
+const days = getDaysBetween('2026-01-01', '2026-01-03');
+console.log(days); // 3 (Jan 1, Jan 2, Jan 3)
+```
+
+### getDaysPassed
+
+Calculate days passed in a timeline (from startDate to today). Returns 0 if timeline hasn't started yet. Today is counted as "passed" once it starts (at 00:00).
+
+```typescript
+function getDaysPassed(startDate: Date | string, endDate: Date | string): number
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Timeline start date
+</ParamField>
+
+<ParamField path="endDate" type="Date | string" required>
+  Timeline end date
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Number of days passed from start to today (0 if timeline hasn't started)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getDaysPassed } from '@/utils/date-helpers';
+
+// Today is 2026-03-03
+const passed = getDaysPassed('2026-01-01', '2026-12-31');
+console.log(passed); // 62 (days from Jan 1 to today)
+```
+
+### getDaysRemaining
+
+Calculate days remaining in a timeline (from tomorrow to endDate). Returns 0 if timeline has ended. Today is NOT counted in "remaining" since it's already in "passed".
+
+```typescript
+function getDaysRemaining(startDate: Date | string, endDate: Date | string): number
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Timeline start date
+</ParamField>
+
+<ParamField path="endDate" type="Date | string" required>
+  Timeline end date
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Number of days remaining from tomorrow to end (0 if timeline has ended)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getDaysRemaining } from '@/utils/date-helpers';
+
+// Today is 2026-03-03
+const remaining = getDaysRemaining('2026-01-01', '2026-12-31');
+console.log(remaining); // 303 (days from tomorrow to Dec 31)
+```
+
+### getTotalDays
+
+Calculate total days in a timeline (inclusive).
+
+```typescript
+function getTotalDays(startDate: Date | string, endDate: Date | string): number
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Timeline start date
+</ParamField>
+
+<ParamField path="endDate" type="Date | string" required>
+  Timeline end date
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Total number of days in the timeline
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTotalDays } from '@/utils/date-helpers';
+
+const total = getTotalDays('2026-01-01', '2026-12-31');
+console.log(total); // 365
+```
+
+### getProgressPercentage
+
+Calculate progress percentage (0-100).
+
+```typescript
+function getProgressPercentage(startDate: Date | string, endDate: Date | string): number
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Timeline start date
+</ParamField>
+
+<ParamField path="endDate" type="Date | string" required>
+  Timeline end date
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Progress percentage rounded to nearest integer (0-100)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getProgressPercentage } from '@/utils/date-helpers';
+
+// Today is 2026-03-03
+const progress = getProgressPercentage('2026-01-01', '2026-12-31');
+console.log(progress); // 17 (17% of the year has passed)
+```
+
+## Date Checking Functions
+
+### isToday
+
+Check if a date is today.
+
+```typescript
+function isToday(date: Date | string): boolean
+```
+
+<ParamField path="date" type="Date | string" required>
+  Date to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if the date is today
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { isToday } from '@/utils/date-helpers';
+
+const check1 = isToday(new Date());
+console.log(check1); // true
+
+const check2 = isToday('2025-01-01');
+console.log(check2); // false
+```
+
+### isPast
+
+Check if a date is in the past.
+
+```typescript
+function isPast(date: Date | string): boolean
+```
+
+<ParamField path="date" type="Date | string" required>
+  Date to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if the date is before today
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { isPast } from '@/utils/date-helpers';
+
+const check = isPast('2025-01-01');
+console.log(check); // true
+```
+
+### isFuture
+
+Check if a date is in the future.
+
+```typescript
+function isFuture(date: Date | string): boolean
+```
+
+<ParamField path="date" type="Date | string" required>
+  Date to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if the date is after today
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { isFuture } from '@/utils/date-helpers';
+
+const check = isFuture('2027-01-01');
+console.log(check); // true
+```
+
+## Formatting Functions
+
+### toISOString
+
+Format a date as ISO 8601 string.
+
+```typescript
+function toISOString(date: Date): string
+```
+
+<ParamField path="date" type="Date" required>
+  Date to format
+</ParamField>
+
+<ResponseField name="return" type="string">
+  ISO 8601 formatted date string
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { toISOString } from '@/utils/date-helpers';
+
+const isoDate = toISOString(new Date('2026-03-15'));
+console.log(isoDate); // "2026-03-15T00:00:00.000Z"
+```
+
+### nowISO
+
+Get the current date as ISO 8601 string.
+
+```typescript
+function nowISO(): string
+```
+
+<ResponseField name="return" type="string">
+  Current date and time as ISO 8601 string
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { nowISO } from '@/utils/date-helpers';
+
+const now = nowISO();
+console.log(now); // "2026-03-03T14:30:00.000Z"
+```
+
+### getOrdinalSuffix
+
+Format a number with ordinal suffix (1st, 2nd, 3rd, etc.).
+
+```typescript
+function getOrdinalSuffix(num: number): string
+```
+
+<ParamField path="num" type="number" required>
+  Number to format
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Number with ordinal suffix
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getOrdinalSuffix } from '@/utils/date-helpers';
+
+console.log(getOrdinalSuffix(1));  // "1st"
+console.log(getOrdinalSuffix(2));  // "2nd"
+console.log(getOrdinalSuffix(3));  // "3rd"
+console.log(getOrdinalSuffix(11)); // "11th"
+console.log(getOrdinalSuffix(21)); // "21st"
+```
+
+### formatLongDate
+
+Get a human-readable date string.
+
+```typescript
+function formatLongDate(date: Date | string): string
+```
+
+<ParamField path="date" type="Date | string" required>
+  Date to format
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Long format date string (e.g., "January 1, 2026")
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { formatLongDate } from '@/utils/date-helpers';
+
+const formatted = formatLongDate('2026-01-15');
+console.log(formatted); // "January 15, 2026"
+```
+
+### formatShortDate
+
+Get a short date string.
+
+```typescript
+function formatShortDate(date: Date | string): string
+```
+
+<ParamField path="date" type="Date | string" required>
+  Date to format
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Short format date string (e.g., "Jan 1, 2026")
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { formatShortDate } from '@/utils/date-helpers';
+
+const formatted = formatShortDate('2026-01-15');
+console.log(formatted); // "Jan 15, 2026"
+```
+
+## Date Manipulation Functions
+
+### addDays
+
+Add days to a date. Returns a new Date object.
+
+```typescript
+function addDays(date: Date | string, days: number): Date
+```
+
+<ParamField path="date" type="Date | string" required>
+  Starting date
+</ParamField>
+
+<ParamField path="days" type="number" required>
+  Number of days to add (can be negative)
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  New Date object with days added
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { addDays } from '@/utils/date-helpers';
+
+const start = new Date('2026-01-01');
+const future = addDays(start, 10);
+console.log(future); // 2026-01-11
+
+const past = addDays(start, -5);
+console.log(past); // 2025-12-27
+```
+
+### getDateFromDotIndex
+
+Get date from timeline start and dot index. Dot index is 0-based (0 = first day of timeline).
+
+```typescript
+function getDateFromDotIndex(startDate: Date | string, dotIndex: number): Date
+```
+
+<ParamField path="startDate" type="Date | string" required>
+  Timeline start date
+</ParamField>
+
+<ParamField path="dotIndex" type="number" required>
+  0-based index of the dot in the grid
+</ParamField>
+
+<ResponseField name="return" type="Date">
+  Date corresponding to the dot index
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getDateFromDotIndex } from '@/utils/date-helpers';
+
+// For a year timeline starting Jan 1, 2026
+const date0 = getDateFromDotIndex('2026-01-01', 0);
+console.log(date0); // 2026-01-01 (first day)
+
+const date10 = getDateFromDotIndex('2026-01-01', 10);
+console.log(date10); // 2026-01-11 (11th day)
+```

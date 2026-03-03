@@ -1,0 +1,314 @@
+---
+title: 'Component Architecture'
+description: 'React Native component structure and organization in Stoic Calendar'
+---
+
+## Overview
+
+Stoic Calendar uses a functional component architecture built with React Native and TypeScript. All components follow a minimalist design philosophy with strict typing and props interfaces.
+
+## Component Directory Structure
+
+```
+components/
+├── stoic-grid.tsx              # Core grid visualization
+├── timeline-card.tsx            # Timeline list item
+├── timeline-dropdown.tsx        # Timeline selector
+├── timeline-form-drawer.tsx     # Create/edit timeline drawer
+├── timeline-management-modal.tsx # Timeline management UI
+├── settings-group.tsx           # iOS-style settings groups
+├── haptic-tab.tsx              # Tab with haptic feedback
+├── date-display-overlay.tsx     # Date overlay UI
+└── paywall/
+    ├── pagination-dots.tsx      # Paywall pagination
+    └── widget-previews/
+        └── timelines-preview.tsx # Widget preview component
+```
+
+## Core Components
+
+### StoicGrid
+
+The main visualization component that renders timelines as grids of dots.
+
+**Location**: `components/stoic-grid.tsx`
+
+**Purpose**: Displays timeline progress as a grid where 1 dot = 1 day. Filled dots represent past days, empty dots represent future days.
+
+**Key Features**:
+- Responsive grid layout that always fits container
+- Wave animation on mount (optional)
+- Interactive dots with press handlers
+- Dynamic color theming support
+- Mini mode for timeline cards
+
+**Props Interface**:
+
+```typescript
+export interface StoicGridProps {
+  timeline: Timeline;           // Timeline to visualize
+  animated?: boolean;           // Show fill animation (default: false)
+  mini?: boolean;              // Mini grid mode for cards (default: false)
+  onDotPress?: (dotIndex: number, position: { x: number; y: number }) => void;
+}
+```
+
+**Example Usage**:
+
+```tsx
+import { StoicGrid } from '@/components/stoic-grid';
+
+<StoicGrid 
+  timeline={activeTimeline} 
+  animated={true}
+  onDotPress={(index, pos) => console.log(`Dot ${index} pressed`)}
+/>
+```
+
+**Animation System**:
+
+The component uses React Native Reanimated for subtle wave animations:
+- Staggered opacity fade-in
+- Scale animation from 0.6 to 1.0
+- Maximum 600ms total delay across all dots
+- Tap feedback with scale animation
+
+### TimelineCard
+
+Displays a timeline in list view with mini grid preview.
+
+**Location**: `components/timeline-card.tsx`
+
+**Key Features**:
+- Serif title typography
+- Type and percentage display
+- Mini grid preview (60×60)
+- Blue left border for active timeline
+- Edit button for custom timelines
+- Optional delete button
+
+**Props Interface**:
+
+```typescript
+export interface TimelineCardProps {
+  timeline: Timeline;
+  onPress?: (timeline: Timeline) => void;    // Set active timeline
+  onEdit?: (timeline: Timeline) => void;     // Edit custom timeline
+  onDelete?: (timeline: Timeline) => void;   // Delete timeline
+  showDelete?: boolean;                      // Show delete button
+}
+```
+
+**Example Usage**:
+
+```tsx
+import { TimelineCard } from '@/components/timeline-card';
+
+<TimelineCard
+  timeline={timeline}
+  onPress={setActiveTimeline}
+  onEdit={handleEdit}
+  showDelete={editMode}
+/>
+```
+
+### SettingsGroup
+
+iOS-style grouped settings list with header and footer.
+
+**Location**: `components/settings-group.tsx`
+
+**Key Features**:
+- Grouped list with rounded corners
+- Optional group title (uppercase)
+- Optional footer text
+- Support for icons, values, checkmarks, chevrons
+- Custom children support (for Philosophy section)
+- Upgrade variant with blue accent border
+
+**Props Interfaces**:
+
+```typescript
+export interface SettingsGroupItem {
+  label: string;
+  value?: string;
+  selected?: boolean;
+  onPress?: () => void;
+  pressable?: boolean;
+  icon?: React.ReactNode;
+  showChevron?: boolean;
+  variant?: 'default' | 'upgrade';
+}
+
+export interface SettingsGroupProps {
+  title?: string;
+  items: SettingsGroupItem[];
+  footer?: string;
+  children?: React.ReactNode;
+}
+```
+
+**Example Usage**:
+
+```tsx
+import { SettingsGroup } from '@/components/settings-group';
+
+<SettingsGroup
+  title="Appearance"
+  items={[
+    {
+      label: 'Theme',
+      value: 'Dark',
+      onPress: () => navigation.navigate('ThemeSettings'),
+      showChevron: true,
+    },
+    {
+      label: 'Grid Color',
+      value: 'Classic Blue',
+      onPress: () => navigation.navigate('GridColorSettings'),
+      showChevron: true,
+    },
+  ]}
+  footer="Appearance settings affect the entire app"
+/>
+```
+
+## Component Patterns
+
+### Theming Pattern
+
+All components use the `useColorScheme()` hook to access system color scheme:
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/theme';
+
+const colorScheme = useColorScheme();
+const colors = Colors[colorScheme ?? 'dark'];
+```
+
+### Props Typing
+
+All components export their props interface:
+
+```tsx
+export interface ComponentNameProps {
+  // Props with JSDoc comments
+}
+
+export function ComponentName({ prop1, prop2 }: ComponentNameProps) {
+  // Component implementation
+}
+```
+
+### Memoization
+
+Expensive calculations use `useMemo()` and child components use `React.memo()`:
+
+```tsx
+const gridLayout = useMemo(() => {
+  return calculateGridLayout(totalDays, width, height);
+}, [totalDays, width, height]);
+
+const AnimatedDot = React.memo(function AnimatedDot(props) {
+  // Component implementation
+});
+```
+
+### Event Handlers
+
+Use `useCallback()` for event handlers passed to children:
+
+```tsx
+const handleLayout = useCallback((event: any) => {
+  const { width, height } = event.nativeEvent.layout;
+  setContainerDimensions({ width, height });
+}, []);
+```
+
+## Styling
+
+### StyleSheet Pattern
+
+All components use `StyleSheet.create()` for static styles:
+
+```tsx
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: Spacing.md,
+  },
+});
+```
+
+### Dynamic Styles
+
+Theme-dependent styles are applied inline:
+
+```tsx
+<View
+  style={[
+    styles.card,
+    {
+      backgroundColor: colors.cardBackground,
+      borderColor: colors.separator,
+    },
+  ]}
+>
+```
+
+### Theme Constants
+
+Import design tokens from theme constants:
+
+```tsx
+import {
+  Colors,
+  Fonts,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+  Shadows,
+} from '@/constants/theme';
+```
+
+## Timeline Components
+
+All timeline-related components in `components/timeline-*.tsx`:
+
+- **timeline-card.tsx** - Timeline list item with mini grid
+- **timeline-dropdown.tsx** - Timeline selector dropdown
+- **timeline-form-drawer.tsx** - Create/edit timeline drawer UI
+- **timeline-management-modal.tsx** - Timeline management modal
+
+These components work together to provide full timeline CRUD operations.
+
+## Animation Guidelines
+
+Following the Stoic design philosophy:
+
+- **Subtle**: Use opacity and scale, avoid bounce/spring
+- **Fast**: 200-300ms durations
+- **Purposeful**: Only animate state changes or user feedback
+- **Easing**: Use `Easing.out(Easing.cubic)` for natural motion
+
+```tsx
+import { withTiming, Easing } from 'react-native-reanimated';
+
+progress.value = withTiming(1, {
+  duration: 300,
+  easing: Easing.out(Easing.cubic),
+});
+```
+
+## Path Aliases
+
+All imports use the `@/` alias for clean imports:
+
+```tsx
+import { Timeline } from '@/types/timeline';
+import { Colors } from '@/constants/theme';
+import { StoicGrid } from '@/components/stoic-grid';
+import { loadTimelines } from '@/services/storage';
+```

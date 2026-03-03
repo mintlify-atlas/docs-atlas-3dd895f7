@@ -1,0 +1,188 @@
+---
+title: Development Setup
+description: Set up your development environment for Stoic Calendar
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Node.js (v16 or later)
+- npm or yarn
+- iOS Simulator (for macOS) or Android Studio (for Android development)
+- Expo CLI
+
+## Installation
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Stoic Calendar repository to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd stoic-calendar
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all project dependencies using your preferred package manager:
+    
+    <CodeGroup>
+    ```bash npm
+    npm install
+    ```
+    
+    ```bash yarn
+    yarn install
+    ```
+    
+    ```bash pnpm
+    pnpm install
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Configure environment variables">
+    Copy the example environment file and configure your settings:
+    
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Edit `.env` and add your RevenueCat API key (see [Environment Variables](/development/environment) for details).
+  </Step>
+
+  <Step title="Start the development server">
+    Launch the Expo development server:
+    
+    <CodeGroup>
+    ```bash npm
+    npm start
+    ```
+    
+    ```bash yarn
+    yarn start
+    ```
+    
+    ```bash pnpm
+    pnpm start
+    ```
+    </CodeGroup>
+    
+    This will start the Metro bundler and display a QR code in your terminal.
+  </Step>
+
+  <Step title="Run on your platform">
+    Choose your target platform:
+    
+    ### iOS Simulator (macOS only)
+    <CodeGroup>
+    ```bash npm
+    npm run ios
+    ```
+    
+    ```bash yarn
+    yarn ios
+    ```
+    
+    ```bash pnpm
+    pnpm ios
+    ```
+    </CodeGroup>
+    
+    ### Android Emulator
+    <CodeGroup>
+    ```bash npm
+    npm run android
+    ```
+    
+    ```bash yarn
+    yarn android
+    ```
+    
+    ```bash pnpm
+    pnpm android
+    ```
+    </CodeGroup>
+    
+    ### Web Browser
+    <CodeGroup>
+    ```bash npm
+    npm run web
+    ```
+    
+    ```bash yarn
+    yarn web
+    ```
+    
+    ```bash pnpm
+    pnpm web
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Development Environment
+
+The project uses:
+
+- **React Native** 0.81.5
+- **Expo SDK** 54
+- **Expo Router** 6.0 for file-based routing
+- **TypeScript** in strict mode
+- **AsyncStorage** for local data persistence
+
+## Project Structure
+
+The app follows Expo Router's file-based routing:
+
+- `app/` - Application screens and layouts
+- `components/` - Reusable UI components
+- `services/` - Business logic and data services
+- `types/` - TypeScript type definitions
+- `utils/` - Helper functions and utilities
+- `constants/` - App constants and configuration
+
+## Path Aliases
+
+The project uses `@/` as an alias for the root directory:
+
+```typescript
+import { Timeline } from '@/types/timeline';
+import { loadTimelines } from '@/services/storage';
+import { StoicGrid } from '@/components/stoic-grid';
+```
+
+## Troubleshooting
+
+### iOS Build Issues
+
+If you encounter issues with iOS builds, try running the prebuild command:
+
+<CodeGroup>
+```bash npm
+npm run prebuild:ios
+```
+
+```bash yarn
+yarn prebuild:ios
+```
+
+```bash pnpm
+pnpm prebuild:ios
+```
+</CodeGroup>
+
+### Module Resolution
+
+After installing new dependencies, you may need to restart the development server with a clean cache:
+
+```bash
+npx expo start -c
+```
+
+## Next Steps
+
+- Review available [npm scripts and commands](/development/commands)
+- Configure [environment variables](/development/environment)
+- Explore the [architecture documentation](/architecture/overview)

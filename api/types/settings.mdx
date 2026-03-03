@@ -1,0 +1,159 @@
+---
+title: 'Settings Types'
+description: 'User preference types for theme and visual customization'
+---
+
+## AppSettings
+
+User preferences stored in AsyncStorage.
+
+```typescript
+interface AppSettings {
+  themeMode: ThemeMode;
+  gridColorTheme: GridColorTheme;
+}
+```
+
+### Properties
+
+<ParamField path="themeMode" type="ThemeMode" required>
+  Theme mode preference for the app
+  
+  Options: `'system'` | `'light'` | `'dark'`
+</ParamField>
+
+<ParamField path="gridColorTheme" type="GridColorTheme" required>
+  Predefined color palette for grid visualization
+  
+  Options: `'classic'` | `'forest'` | `'sunset'` | `'monochrome'`
+</ParamField>
+
+### Usage Example
+
+```typescript
+import { AppSettings } from '@/types/timeline';
+
+const settings: AppSettings = {
+  themeMode: 'dark',
+  gridColorTheme: 'classic'
+};
+
+// Save to AsyncStorage
+await AsyncStorage.setItem('app-settings', JSON.stringify(settings));
+
+// Load from AsyncStorage
+const savedSettings = await AsyncStorage.getItem('app-settings');
+const settings: AppSettings = savedSettings 
+  ? JSON.parse(savedSettings) 
+  : { themeMode: 'dark', gridColorTheme: 'classic' };
+```
+
+<Note>
+  The app defaults to dark mode (`themeMode: 'dark'`) following the dark-mode-first design philosophy.
+</Note>
+
+---
+
+## ThemeMode
+
+Theme mode options for the application.
+
+```typescript
+type ThemeMode = 'system' | 'light' | 'dark';
+```
+
+### Values
+
+<ParamField path="'system'" type="string">
+  Follow system theme preference (respects device settings)
+</ParamField>
+
+<ParamField path="'light'" type="string">
+  Force light mode regardless of system preference
+</ParamField>
+
+<ParamField path="'dark'" type="string">
+  Force dark mode regardless of system preference (default)
+</ParamField>
+
+### Usage Example
+
+```typescript
+import { ThemeMode } from '@/types/timeline';
+
+const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+
+// Handle theme change
+const handleThemeChange = (mode: ThemeMode) => {
+  setThemeMode(mode);
+  // Save to settings
+};
+
+// Check current theme
+if (themeMode === 'system') {
+  // Use system preference
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+} else {
+  const isDark = themeMode === 'dark';
+}
+```
+
+---
+
+## GridColorTheme
+
+Predefined color palettes for grid visualization.
+
+```typescript
+type GridColorTheme = 'classic' | 'forest' | 'sunset' | 'monochrome';
+```
+
+### Values
+
+<ParamField path="'classic'" type="string">
+  Classic color scheme with traditional palette
+</ParamField>
+
+<ParamField path="'forest'" type="string">
+  Forest-inspired green tones
+</ParamField>
+
+<ParamField path="'sunset'" type="string">
+  Warm sunset colors (oranges and reds)
+</ParamField>
+
+<ParamField path="'monochrome'" type="string">
+  Black and white minimalist theme
+</ParamField>
+
+### Usage Example
+
+```typescript
+import { GridColorTheme } from '@/types/timeline';
+import { StoicGrid } from '@/components/stoic-grid';
+
+const [colorTheme, setColorTheme] = useState<GridColorTheme>('classic');
+
+// Render grid with selected theme
+<StoicGrid
+  timeline={activeTimeline}
+  colorTheme={colorTheme}
+/>
+
+// Theme picker
+const themes: GridColorTheme[] = ['classic', 'forest', 'sunset', 'monochrome'];
+
+{themes.map(theme => (
+  <TouchableOpacity
+    key={theme}
+    onPress={() => setColorTheme(theme)}
+  >
+    <Text>{theme}</Text>
+  </TouchableOpacity>
+))}
+```
+
+<Tip>
+  The grid color theme affects the visual appearance of the timeline grid on the home screen, allowing users to customize the aesthetic while maintaining the minimalist design philosophy.
+</Tip>

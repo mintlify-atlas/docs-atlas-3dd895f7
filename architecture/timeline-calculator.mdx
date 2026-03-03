@@ -1,0 +1,478 @@
+---
+title: "Timeline Calculator"
+description: "Business logic for timeline creation, calculations, and updates"
+---
+
+## Overview
+
+The Timeline Calculator Service (`services/timeline-calculator.ts`) provides all business logic for creating timelines, calculating statistics, and managing timeline updates. It handles the four timeline types (YEAR, MONTH, WEEK, CUSTOM) and auto-update logic for dynamic timelines.
+
+## Core Interfaces
+
+### TimelineConfig
+
+Configuration object returned when creating a timeline from a type:
+
+```typescript
+interface TimelineConfig {
+  startDate: string;
+  endDate: string;
+  title: string;
+}
+```
+
+**Source:** `services/timeline-calculator.ts:30-34`
+
+### TimelineStats
+
+Calculated statistics for a timeline:
+
+```typescript
+interface TimelineStats {
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number;
+}
+```
+
+**Source:** `services/timeline-calculator.ts:40-45`
+
+## Timeline Creation
+
+### Calculate Timeline from Type
+
+Generate timeline configuration from a timeline type:
+
+```typescript
+export function calculateTimelineFromType(
+  type: TimelineType,
+  customOptions?: {
+    year?: number;
+    month?: number;
+    startDate?: Date;
+    endDate?: Date;
+    title?: string;
+  }
+): TimelineConfig
+```
+
+**Parameters:**
+- `type`: Timeline type (YEAR, MONTH, WEEK, CUSTOM)
+- `customOptions`: Optional configuration based on type
+
+**Returns:** Timeline configuration with start/end dates and title
+
+**Examples:**
+
+```typescript
+import { calculateTimelineFromType, TimelineType } from '@/services/timeline-calculator';
+
+// Current year
+const yearConfig = calculateTimelineFromType(TimelineType.YEAR);
+// { startDate: "2026-01-01T00:00:00.000Z", endDate: "2026-12-31T23:59:59.999Z", title: "2026" }
+
+// Specific year
+const year2027 = calculateTimelineFromType(TimelineType.YEAR, { year: 2027 });
+// { startDate: "2027-01-01T00:00:00.000Z", endDate: "2027-12-31T23:59:59.999Z", title: "2027" }
+
+// Current month
+const monthConfig = calculateTimelineFromType(TimelineType.MONTH);
+// { startDate: "2026-03-01T00:00:00.000Z", endDate: "2026-03-31T23:59:59.999Z", title: "March" }
+
+// Current week (Monday-Sunday)
+const weekConfig = calculateTimelineFromType(TimelineType.WEEK);
+// { startDate: "2026-03-02T00:00:00.000Z", endDate: "2026-03-08T23:59:59.999Z", title: "This Week" }
+
+// Custom date range
+const customConfig = calculateTimelineFromType(TimelineType.CUSTOM, {
+  startDate: new Date('2026-06-01'),
+  endDate: new Date('2026-08-31'),
+  title: 'Summer 2026',
+});
+// { startDate: "2026-06-01T00:00:00.000Z", endDate: "2026-08-31T23:59:59.999Z", title: "Summer 2026" }
+```
+
+**Source:** `services/timeline-calculator.ts:58-129`
+
+### Create Timeline
+
+Create a complete timeline object ready to be saved:
+
+```typescript
+export function createTimeline(
+  type: TimelineType,
+  customOptions?: {
+    year?: number;
+    month?: number;
+    startDate?: Date;
+    endDate?: Date;
+    title?: string;
+    isActive?: boolean;
+  }
+): Timeline
+```
+
+**Parameters:**
+- `type`: Timeline type
+- `customOptions`: Optional configuration and `isActive` flag
+
+**Returns:** Complete Timeline object with unique ID and creation timestamp
+
+**ID Format:** `timeline_{timestamp}_{random}` (e.g., `timeline_1709740800000_abc123xyz`)
+
+**Example:**
+```typescript
+import { createTimeline } from '@/services/timeline-calculator';
+import { TimelineType } from '@/types/timeline';
+import { saveTimeline } from '@/services/storage';
+
+const newTimeline = createTimeline(TimelineType.YEAR, {
+  year: 2026,
+  isActive: true,
+});
+
+await saveTimeline(newTimeline);
+```
+
+**Source:** `services/timeline-calculator.ts:138-163`
+
+## Timeline Calculations
+
+### Calculate Timeline Stats
+
+Get all statistics for a timeline:
+
+```typescript
+export function calculateTimelineStats(timeline: Timeline): TimelineStats
+```
+
+**Returns:** Complete statistics object with progress data
+
+**Example:**
+```typescript
+import { calculateTimelineStats } from '@/services/timeline-calculator';
+import { getActiveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline) {
+  const stats = calculateTimelineStats(timeline);
+  console.log(`Progress: ${stats.daysPassed}/${stats.totalDays} days (${stats.progressPercentage}%)`);
+  console.log(`Remaining: ${stats.daysRemaining} days`);
+}
+```
+
+**Source:** `services/timeline-calculator.ts:175-187`
+
+### Individual Stat Functions
+
+Convenience functions for single statistics:
+
+```typescript
+export function getTimelineDaysPassed(timeline: Timeline): number
+export function getTimelineDaysRemaining(timeline: Timeline): number
+export function getTimelineTotalDays(timeline: Timeline): number
+export function getTimelineProgressPercentage(timeline: Timeline): number
+```
+
+**Source:** `services/timeline-calculator.ts:192-215`
+
+## Timeline Updates
+
+### Update Week Timeline
+
+Update a "This Week" timeline to the current week:
+
+```typescript
+export function updateWeekTimeline(timeline: Timeline): Timeline
+```
+
+**Behavior:**
+- Throws error if timeline type is not WEEK
+- Returns new timeline with updated start/end dates
+- Preserves all other properties (id, createdAt, isActive, etc.)
+
+**Example:**
+```typescript
+import { updateWeekTimeline, weekTimelineNeedsUpdate } from '@/services/timeline-calculator';
+import { getActiveTimeline, saveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline && timeline.type === 'week' && weekTimelineNeedsUpdate(timeline)) {
+  const updated = updateWeekTimeline(timeline);
+  await saveTimeline(updated);
+}
+```
+
+**Source:** `services/timeline-calculator.ts:228-241`
+
+### Check if Week Timeline Needs Update
+
+```typescript
+export function weekTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+**Returns:** `true` if the timeline's week is not the current week
+
+**Source:** `services/timeline-calculator.ts:250-260`
+
+### Update Month Timeline
+
+Update a month timeline to the current month:
+
+```typescript
+export function updateMonthTimeline(timeline: Timeline): Timeline
+```
+
+**Source:** `services/timeline-calculator.ts:269-282`
+
+### Check if Month Timeline Needs Update
+
+```typescript
+export function monthTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+**Source:** `services/timeline-calculator.ts:291-304`
+
+### Update Year Timeline
+
+Update a year timeline to the current year:
+
+```typescript
+export function updateYearTimeline(timeline: Timeline): Timeline
+```
+
+**Source:** `services/timeline-calculator.ts:313-326`
+
+### Check if Year Timeline Needs Update
+
+```typescript
+export function yearTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+**Source:** `services/timeline-calculator.ts:335-345`
+
+### Auto-Update Any Timeline
+
+Automatically detect and update any timeline that needs updating:
+
+```typescript
+export function updateTimelineIfNeeded(
+  timeline: Timeline
+): { timeline: Timeline; wasUpdated: boolean }
+```
+
+**Returns:** Object with updated timeline and boolean flag
+
+**Behavior:**
+- Automatically detects timeline type
+- Checks if update is needed
+- Returns updated timeline if needed, otherwise returns original
+- CUSTOM timelines never auto-update
+
+**Example:**
+```typescript
+import { updateTimelineIfNeeded } from '@/services/timeline-calculator';
+import { loadTimelines, saveTimeline } from '@/services/storage';
+
+const timelines = await loadTimelines();
+for (const timeline of timelines) {
+  const { timeline: updated, wasUpdated } = updateTimelineIfNeeded(timeline);
+  if (wasUpdated) {
+    console.log(`Updated timeline: ${updated.title}`);
+    await saveTimeline(updated);
+  }
+}
+```
+
+**Source:** `services/timeline-calculator.ts:354-380`
+
+## Timeline Validation
+
+### Validate Timeline
+
+Validate a timeline object for required fields and valid dates:
+
+```typescript
+export function validateTimeline(timeline: Partial<Timeline>): boolean
+```
+
+**Validation checks:**
+- Has valid ID
+- Has valid type from TimelineType enum
+- Has title
+- Has start and end dates
+- Dates are valid ISO 8601 strings
+- Start date is before end date
+- Has creation date
+
+**Throws:** Error with descriptive message if validation fails
+
+**Example:**
+```typescript
+import { validateTimeline } from '@/services/timeline-calculator';
+
+try {
+  validateTimeline(timeline);
+  console.log('Timeline is valid');
+} catch (error) {
+  console.error('Validation failed:', error.message);
+}
+```
+
+**Source:** `services/timeline-calculator.ts:393-426`
+
+## Helper Functions
+
+### Get Timeline Description
+
+Generate a human-readable description:
+
+```typescript
+export function getTimelineDescription(timeline: Timeline): string
+```
+
+**Returns:** String in format `"{Type} · {Percentage}%"`
+
+**Examples:**
+- `"Year · 18%"`
+- `"Week · 100%"`
+- `"Custom · 50%"`
+
+**Source:** `services/timeline-calculator.ts:439-452`
+
+### Get Timeline Progress
+
+Generate a human-readable progress string:
+
+```typescript
+export function getTimelineProgress(timeline: Timeline): string
+```
+
+**Returns:** String in format `"{daysPassed} of {totalDays} days"`
+
+**Examples:**
+- `"65 of 365 days"`
+- `"7 of 7 days"`
+
+**Source:** `services/timeline-calculator.ts:461-464`
+
+### Get Timeline Remaining
+
+Generate a human-readable remaining string:
+
+```typescript
+export function getTimelineRemaining(timeline: Timeline): string
+```
+
+**Returns:** String in format `"{days} day(s) remaining"`
+
+**Examples:**
+- `"300 days remaining"`
+- `"1 day remaining"`
+- `"0 days remaining"`
+
+**Source:** `services/timeline-calculator.ts:472-477`
+
+### Sort Timelines by Date
+
+Sort timelines by creation date (newest first):
+
+```typescript
+export function sortTimelinesByDate(timelines: Timeline[]): Timeline[]
+```
+
+**Source:** `services/timeline-calculator.ts:482-486`
+
+### Sort Timelines with Active First
+
+Sort timelines with active timeline at the top:
+
+```typescript
+export function sortTimelinesWithActiveFirst(timelines: Timeline[]): Timeline[]
+```
+
+**Behavior:**
+- Active timeline appears first
+- Remaining timelines sorted by creation date (newest first)
+
+**Source:** `services/timeline-calculator.ts:491-497`
+
+## Date Helpers Integration
+
+The timeline calculator relies on centralized date utilities from `utils/date-helpers.ts`:
+
+```typescript
+import {
+  getStartOfCurrentYear,
+  getEndOfCurrentYear,
+  getStartOfCurrentMonth,
+  getEndOfCurrentMonth,
+  getStartOfCurrentWeek,
+  getEndOfCurrentWeek,
+  getDaysPassed,
+  getDaysRemaining,
+  getTotalDays,
+  getProgressPercentage,
+  toISOString,
+  nowISO,
+} from '@/utils/date-helpers';
+```
+
+**Source:** `services/timeline-calculator.ts:7-24`
+
+## Usage Patterns
+
+### Creating and Saving a Timeline
+
+```typescript
+import { createTimeline } from '@/services/timeline-calculator';
+import { saveTimeline, setActiveTimeline } from '@/services/storage';
+import { TimelineType } from '@/types/timeline';
+
+// Create a year timeline
+const timeline = createTimeline(TimelineType.YEAR, { year: 2026 });
+
+// Save to storage
+await saveTimeline(timeline);
+
+// Set as active
+await setActiveTimeline(timeline.id);
+```
+
+### Displaying Timeline Progress
+
+```typescript
+import { calculateTimelineStats, getTimelineProgress } from '@/services/timeline-calculator';
+import { getActiveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline) {
+  const stats = calculateTimelineStats(timeline);
+  const progressText = getTimelineProgress(timeline);
+  
+  console.log(progressText); // "65 of 365 days"
+  console.log(`${stats.progressPercentage}% complete`);
+}
+```
+
+### Auto-Updating Week Timeline on App Launch
+
+```typescript
+import { updateTimelineIfNeeded } from '@/services/timeline-calculator';
+import { getActiveTimeline, saveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline) {
+  const { timeline: updated, wasUpdated } = updateTimelineIfNeeded(timeline);
+  if (wasUpdated) {
+    await saveTimeline(updated);
+    console.log('Active timeline updated to current period');
+  }
+}
+```
+
+## Related Documentation
+
+- [Data Model](/architecture/data-model) - Timeline and AppSettings interfaces
+- [Storage Service](/architecture/storage) - AsyncStorage persistence layer

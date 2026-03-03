@@ -1,0 +1,100 @@
+---
+title: Introduction
+description: A minimalist time visualization app inspired by Stoic philosophy
+---
+
+# Welcome to Memento Calendar
+
+Memento Calendar is a minimalist mobile app that helps you visualize the passage of time through beautiful grid-based timelines. Inspired by Stoic philosophy, the app transforms abstract time into tangible visual grids where each square represents a day.
+
+<Note>
+  Available for iOS and Android
+</Note>
+
+## Core Philosophy
+
+Memento Calendar embraces Stoic minimalism with a focus on awareness over motivation:
+
+- **Clean, Distraction-Free Interface**: Dark-mode-first design with minimal UI elements
+- **Tangible Time Visualization**: See your days laid out in a grid where each square tells a story
+- **No Gamification**: No streaks, badges, or notifications—just pure awareness
+- **Local-First**: Your data stays on your device with AsyncStorage persistence
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Visual Timeline Grids" icon="grid">
+    Transform any time period into a grid where each square represents one day. Watch time pass in a tangible, visual format.
+  </Card>
+  
+  <Card title="Multiple Timeline Types" icon="calendar">
+    Create timelines for years, months, weeks, or custom date ranges. Track what matters most to you.
+  </Card>
+  
+  <Card title="Auto-Updating Weeks" icon="arrows-rotate">
+    Week timelines automatically update to the current week, always keeping you in the present moment.
+  </Card>
+  
+  <Card title="Progress Tracking" icon="chart-line">
+    See at a glance how many days have passed and how many remain in any timeline.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Create a Timeline">
+    Choose from preset options (current year, month, week) or create a custom date range.
+  </Step>
+  
+  <Step title="Set as Active">
+    Select which timeline you want to display on your home screen.
+  </Step>
+  
+  <Step title="Watch Time Pass">
+    Each day that passes is marked in the grid, making time visible and tangible.
+  </Step>
+</Steps>
+
+## Timeline Types Explained
+
+**YEAR Timelines**  
+Fixed year-long timelines (e.g., 2026) showing all 365 or 366 days of the year.
+
+**MONTH Timelines**  
+Month-specific timelines (e.g., March 2026) displaying every day of that month.
+
+**WEEK Timelines**  
+Auto-updating timelines that always show the current week (Monday through Sunday).
+
+**CUSTOM Timelines**  
+User-defined date ranges for tracking specific periods like projects, goals, or life events.
+
+## Technology Stack
+
+Memento Calendar is built with modern React Native technology:
+
+- **React Native 0.81.5** with **Expo SDK 54**
+- **Expo Router 6.0** for file-based navigation
+- **AsyncStorage** for local data persistence
+- **React Native Reanimated 4.1** for smooth animations
+- **TypeScript** with strict mode enabled
+
+<Note>
+  The app is currently in MVP stage with local-only storage. Firebase sync and premium features are planned for future releases.
+</Note>
+
+## Design Principles
+
+**Dark-Mode-First**  
+The app defaults to dark mode, providing a calm and focused visual experience.
+
+**Stoic Minimalism**  
+Every design decision prioritizes clarity and purpose over decoration.
+
+**Firebase-Ready Architecture**  
+All data uses ISO 8601 date formats and flat structures, ready for future cloud sync.
+
+## Get Started
+
+Ready to begin? Head over to the [Quickstart](/quickstart) guide to download the app and create your first timeline.

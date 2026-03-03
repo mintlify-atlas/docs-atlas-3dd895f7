@@ -1,0 +1,356 @@
+---
+title: "Grid Layout"
+description: "Grid dimension calculation utilities for Stoic Calendar"
+---
+
+Dynamic dot sizing algorithm for the Stoic Grid. Core principle: 1 dot = 1 day, always. The grid must ALWAYS fit its container without scrolling.
+
+## Types
+
+### GridLayout
+
+Grid layout configuration interface returned by layout calculations.
+
+```typescript
+interface GridLayout {
+  columns: number;              // Number of columns in the grid
+  rows: number;                 // Number of rows in the grid
+  dotSize: number;              // Size of each dot (diameter in pixels)
+  spacingHorizontal: number;    // Horizontal spacing between dots (in pixels)
+  spacingVertical: number;      // Vertical spacing between dots (in pixels)
+  gridWidth: number;            // Total width required for the grid
+  gridHeight: number;           // Total height required for the grid
+}
+```
+
+## Layout Calculation
+
+### calculateGridLayout
+
+Calculate optimal grid layout for a given number of dots and container size.
+
+Algorithm:
+1. Determine optimal number of columns (prefer 15-20 for readability)
+2. Calculate number of rows based on total dots
+3. Calculate maximum dot size that fits both width and height
+4. Apply spacing (10-15% of dot size)
+5. Ensure grid fits perfectly in container
+
+```typescript
+function calculateGridLayout(
+  totalDots: number,
+  containerWidth: number,
+  containerHeight: number
+): GridLayout
+```
+
+<ParamField path="totalDots" type="number" required>
+  Total number of dots to display (365 for year, 7 for week, etc.)
+</ParamField>
+
+<ParamField path="containerWidth" type="number" required>
+  Available width in pixels
+</ParamField>
+
+<ParamField path="containerHeight" type="number" required>
+  Available height in pixels
+</ParamField>
+
+<ResponseField name="return" type="GridLayout">
+  Grid layout configuration object with columns, rows, dot size, spacing, and dimensions
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateGridLayout } from '@/utils/grid-layout';
+
+// Calculate layout for a year (365 days)
+const layout = calculateGridLayout(365, 350, 800);
+
+console.log(layout);
+// {
+//   columns: 16,
+//   rows: 23,
+//   dotSize: 18,
+//   spacingHorizontal: 4,
+//   spacingVertical: 1,
+//   gridWidth: 348,
+//   gridHeight: 436
+// }
+```
+
+**Column Optimization:**
+
+- **Week timelines (≤7 dots)**: Single row
+- **Small grids (≤49 dots)**: 7 columns (week-like layout)
+- **Medium grids (≤100 dots)**: 10 columns
+- **Large grids (365+ dots)**: 16 columns (Manus.ai MVP style), or 18 columns for wide containers
+
+**Spacing Ratios:**
+
+- Horizontal spacing: 25% of dot size (wider gaps)
+- Vertical spacing: 8% of dot size (tighter gaps)
+- Creates asymmetric spacing for better visual hierarchy
+
+## Position Calculation
+
+### getDotPosition
+
+Calculate the position (x, y) of a dot in the grid.
+
+```typescript
+function getDotPosition(
+  index: number,
+  layout: GridLayout
+): { x: number; y: number }
+```
+
+<ParamField path="index" type="number" required>
+  Dot index (0-based)
+</ParamField>
+
+<ParamField path="layout" type="GridLayout" required>
+  Grid layout configuration from calculateGridLayout
+</ParamField>
+
+<ResponseField name="return" type="{ x: number; y: number }">
+  Position in pixels from top-left of grid
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateGridLayout, getDotPosition } from '@/utils/grid-layout';
+
+const layout = calculateGridLayout(365, 350, 800);
+
+// Get position of first dot (day 1)
+const pos0 = getDotPosition(0, layout);
+console.log(pos0); // { x: 0, y: 0 }
+
+// Get position of 17th dot (first dot of second row)
+const pos16 = getDotPosition(16, layout);
+console.log(pos16); // { x: 0, y: 19 }
+```
+
+### generateDotPositions
+
+Generate an array of dot positions for rendering. Useful for rendering large grids efficiently.
+
+```typescript
+function generateDotPositions(
+  totalDots: number,
+  layout: GridLayout
+): Array<{ x: number; y: number; index: number }>
+```
+
+<ParamField path="totalDots" type="number" required>
+  Total number of dots
+</ParamField>
+
+<ParamField path="layout" type="GridLayout" required>
+  Grid layout configuration
+</ParamField>
+
+<ResponseField name="return" type="Array<{ x: number; y: number; index: number }>">
+  Array of position objects with x, y coordinates and dot index
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateGridLayout, generateDotPositions } from '@/utils/grid-layout';
+
+const layout = calculateGridLayout(7, 350, 100);
+const positions = generateDotPositions(7, layout);
+
+console.log(positions);
+// [
+//   { x: 0, y: 0, index: 0 },
+//   { x: 50, y: 0, index: 1 },
+//   { x: 100, y: 0, index: 2 },
+//   ...
+// ]
+
+// Use in React Native rendering
+positions.map(({ x, y, index }) => (
+  <View
+    key={index}
+    style={{
+      position: 'absolute',
+      left: x,
+      top: y,
+      width: layout.dotSize,
+      height: layout.dotSize,
+    }}
+  />
+));
+```
+
+## Grid Centering
+
+### calculateGridCenterOffset
+
+Calculate grid centering offset to center the grid in its container.
+
+```typescript
+function calculateGridCenterOffset(
+  gridWidth: number,
+  gridHeight: number,
+  containerWidth: number,
+  containerHeight: number
+): { offsetX: number; offsetY: number }
+```
+
+<ParamField path="gridWidth" type="number" required>
+  Actual grid width from layout.gridWidth
+</ParamField>
+
+<ParamField path="gridHeight" type="number" required>
+  Actual grid height from layout.gridHeight
+</ParamField>
+
+<ParamField path="containerWidth" type="number" required>
+  Container width
+</ParamField>
+
+<ParamField path="containerHeight" type="number" required>
+  Container height
+</ParamField>
+
+<ResponseField name="return" type="{ offsetX: number; offsetY: number }">
+  X and Y offsets to center the grid in the container
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateGridLayout, calculateGridCenterOffset } from '@/utils/grid-layout';
+
+const containerWidth = 350;
+const containerHeight = 800;
+const layout = calculateGridLayout(365, containerWidth, containerHeight);
+
+const offset = calculateGridCenterOffset(
+  layout.gridWidth,
+  layout.gridHeight,
+  containerWidth,
+  containerHeight
+);
+
+console.log(offset); // { offsetX: 1, offsetY: 182 }
+
+// Use in React Native
+<View style={{
+  paddingLeft: offset.offsetX,
+  paddingTop: offset.offsetY,
+}}>
+  {/* Render grid here */}
+</View>
+```
+
+## Container Height Calculation
+
+### calculateOptimalHeight
+
+Calculate optimal container height for a grid given a fixed width. Useful for determining how much space a grid needs.
+
+```typescript
+function calculateOptimalHeight(
+  totalDots: number,
+  containerWidth: number
+): number
+```
+
+<ParamField path="totalDots" type="number" required>
+  Total number of dots
+</ParamField>
+
+<ParamField path="containerWidth" type="number" required>
+  Fixed container width
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Recommended container height in pixels
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateOptimalHeight } from '@/utils/grid-layout';
+
+// Calculate ideal height for a year grid with 350px width
+const optimalHeight = calculateOptimalHeight(365, 350);
+console.log(optimalHeight); // 436
+
+// Use for dynamic container sizing
+const GridContainer = () => {
+  const screenWidth = Dimensions.get('window').width - 40; // 20px padding
+  const requiredHeight = calculateOptimalHeight(365, screenWidth);
+  
+  return (
+    <View style={{ width: screenWidth, height: requiredHeight }}>
+      {/* Grid content */}
+    </View>
+  );
+};
+```
+
+## Complete Usage Example
+
+```typescript
+import React from 'react';
+import { View, Dimensions } from 'react-native';
+import {
+  calculateGridLayout,
+  generateDotPositions,
+  calculateGridCenterOffset,
+} from '@/utils/grid-layout';
+
+const YearGrid = ({ totalDays = 365 }) => {
+  const { width, height } = Dimensions.get('window');
+  const containerWidth = width - 40; // 20px padding each side
+  const containerHeight = height - 200; // Reserve space for header/footer
+
+  // Calculate layout
+  const layout = calculateGridLayout(totalDays, containerWidth, containerHeight);
+
+  // Generate all dot positions
+  const positions = generateDotPositions(totalDays, layout);
+
+  // Calculate centering offset
+  const offset = calculateGridCenterOffset(
+    layout.gridWidth,
+    layout.gridHeight,
+    containerWidth,
+    containerHeight
+  );
+
+  return (
+    <View style={{ width: containerWidth, height: containerHeight }}>
+      <View style={{
+        paddingLeft: offset.offsetX,
+        paddingTop: offset.offsetY,
+      }}>
+        {positions.map(({ x, y, index }) => (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width: layout.dotSize,
+              height: layout.dotSize,
+              borderRadius: layout.dotSize / 2,
+              backgroundColor: '#333',
+            }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export default YearGrid;
+```

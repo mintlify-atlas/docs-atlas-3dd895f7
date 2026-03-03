@@ -1,0 +1,173 @@
+---
+title: Building for iOS
+description: Build and run Stoic Calendar on iOS simulator and physical devices
+---
+
+This guide covers building Stoic Calendar for iOS devices and simulators.
+
+## Prerequisites
+
+- macOS with Xcode installed
+- Node.js and npm
+- CocoaPods installed
+- Apple Developer account (for physical devices)
+
+## iOS Configuration
+
+The app is configured in `app.json` with the following iOS settings:
+
+- **Bundle Identifier**: `com.ilyastorun.memento`
+- **Build Number**: `9`
+- **Apple Team ID**: `XC35LMM9B5`
+- **Tablet Support**: Disabled (iPhone only)
+- **New Architecture**: Enabled
+- **App Groups**: `group.com.stoiccalendar.shared` (for future widget support)
+
+## Building for iOS Simulator
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+
+  <Step title="Run iOS prebuild (first time only)">
+    The prebuild command generates native iOS files and applies necessary patches:
+    ```bash
+    npm run prebuild:ios
+    ```
+    
+    This runs `expo prebuild --platform ios` and applies the ExpoModulesProvider patch.
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    npx expo start
+    ```
+  </Step>
+
+  <Step title="Launch on simulator">
+    In a new terminal, run:
+    ```bash
+    npm run ios
+    ```
+    
+    This executes `expo run:ios` which builds and launches the app on the default iOS simulator.
+  </Step>
+</Steps>
+
+## Building for Physical Device
+
+<Steps>
+  <Step title="Configure signing">
+    Open the project in Xcode:
+    ```bash
+    open ios/stoiccalendar.xcworkspace
+    ```
+    
+    In Xcode, select the project target and configure:
+    - Team: Select your Apple Developer team (XC35LMM9B5)
+    - Bundle Identifier: `com.ilyastorun.memento`
+    - Signing Certificate: Automatic or manual signing
+  </Step>
+
+  <Step title="Connect your device">
+    Connect your iPhone via USB and trust the computer if prompted.
+  </Step>
+
+  <Step title="Run on device">
+    ```bash
+    npm run ios --device
+    ```
+    
+    Or select your device from Xcode and click Run.
+  </Step>
+</Steps>
+
+## EAS Build (Cloud Builds)
+
+For production or internal distribution builds, use EAS Build:
+
+### Development Build
+
+```bash
+eas build --profile development --platform ios
+```
+
+This creates a development build with:
+- Development client enabled
+- Internal distribution
+- Simulator support enabled
+
+### Preview Build
+
+```bash
+eas build --profile preview --platform ios
+```
+
+Creates an internal distribution build for TestFlight or ad-hoc distribution.
+
+### Production Build
+
+```bash
+eas build --profile production --platform ios
+```
+
+Creates a production build ready for App Store submission.
+
+## Custom Patches
+
+The project includes a custom patch script for iOS:
+
+```bash
+npm run patch:ios
+```
+
+This runs `scripts/patch-expo-modules-provider.js` to fix ExpoModulesProvider compatibility issues. The patch is automatically applied:
+- After `npm run prebuild:ios`
+- After `npm install` (via postinstall hook)
+
+## Troubleshooting
+
+### CocoaPods Issues
+
+If you encounter pod-related errors:
+
+```bash
+cd ios
+pod deintegrate
+pod install
+cd ..
+```
+
+### Build Cache Issues
+
+Clear build cache and rebuild:
+
+```bash
+cd ios
+xcodebuild clean
+cd ..
+npm run ios
+```
+
+### New Architecture Issues
+
+The app uses React Native's New Architecture (`newArchEnabled: true`). If you encounter compatibility issues:
+
+1. Check that all dependencies support the New Architecture
+2. Verify the ExpoModulesProvider patch was applied
+3. Try rebuilding from scratch with `expo prebuild --clean`
+
+### Simulator Not Found
+
+If the simulator doesn't launch:
+
+```bash
+# List available simulators
+xcrun simctl list devices
+
+# Specify a simulator
+npm run ios -- --simulator="iPhone 15 Pro"
+```

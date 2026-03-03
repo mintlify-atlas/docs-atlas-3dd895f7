@@ -1,0 +1,542 @@
+---
+title: 'Theme System'
+description: 'Design tokens, color palettes, and theming constants'
+---
+
+## Overview
+
+Stoic Calendar uses a comprehensive theme system based on Apple's Human Interface Guidelines. The theme is defined in `constants/theme.ts` and provides a complete design token system for colors, typography, spacing, and more.
+
+## Design Philosophy
+
+**NorthStar Principle**: "Make time clearer without making it louder"
+
+**Key Principles**:
+- Dark-mode-first design
+- Minimal, calm, neutral aesthetic
+- Pure black backgrounds for OLED displays
+- Subtle animations (no spring/bounce)
+- iOS 26 design patterns
+
+## Color System
+
+**Location**: `constants/theme.ts:16-83`
+
+The color system provides semantic colors for both light and dark modes:
+
+### Light Mode Colors
+
+```typescript
+colors.light = {
+  // Backgrounds
+  background: '#FFFFFF',
+  secondaryBackground: '#F2F2F7',
+  tertiaryBackground: '#FFFFFF',
+
+  // Text
+  textPrimary: '#000000',
+  textSecondary: '#8E8E93',
+  textTertiary: '#C7C7CC',
+
+  // Accent (iOS Blue)
+  accent: '#007AFF',
+  accentLight: '#5AC8FA',
+
+  // Dots (overridden by GridColorPalettes)
+  dotFilled: '#007AFF',
+  dotEmpty: '#D1D1D6',
+  dotEmptyBorder: '#C7C7CC',
+
+  // UI Elements
+  separator: '#C6C6C8',
+  cardBackground: '#F2F2F7',
+  cardBorder: '#E5E5EA',
+
+  // Tab Bar
+  tabBarBackground: 'rgba(242, 242, 247, 0.8)',
+  tabIconActive: '#007AFF',
+  tabIconInactive: '#8E8E93',
+
+  // Interactive States
+  destructive: '#FF3B30',
+}
+```
+
+### Dark Mode Colors
+
+```typescript
+colors.dark = {
+  // Backgrounds (Pure Black for OLED)
+  background: '#000000',
+  secondaryBackground: '#1C1C1E',
+  tertiaryBackground: '#2C2C2E',
+
+  // Text
+  textPrimary: '#FFFFFF',
+  textSecondary: '#8E8E93',
+  textTertiary: '#48484A',
+
+  // Accent (iOS Blue)
+  accent: '#007AFF',
+  accentLight: '#5AC8FA',
+
+  // Dots (overridden by GridColorPalettes)
+  dotFilled: '#007AFF',
+  dotEmpty: '#333333',
+  dotEmptyBorder: '#48484A',
+
+  // UI Elements
+  separator: '#38383A',
+  cardBackground: '#1C1C1E',
+  cardBorder: '#2C2C2E',
+
+  // Tab Bar
+  tabBarBackground: 'rgba(28, 28, 30, 0.8)',
+  tabIconActive: '#007AFF',
+  tabIconInactive: '#8E8E93',
+
+  // Interactive States
+  destructive: '#FF453A',
+}
+```
+
+### Usage in Components
+
+```tsx
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/theme';
+
+const colorScheme = useColorScheme();
+const colors = Colors[colorScheme ?? 'dark'];
+
+<View style={{ backgroundColor: colors.background }}>
+  <Text style={{ color: colors.textPrimary }}>Hello</Text>
+</View>
+```
+
+## Grid Color Palettes
+
+**Location**: `constants/theme.ts:90-135`
+
+Predefined color themes for the Stoic Grid visualization:
+
+### Available Palettes
+
+```typescript
+export const GridColorPalettes = {
+  classic: {
+    name: 'Classic Blue',
+    light: { dotFilled: '#007AFF', dotEmpty: '#D1D1D6' },
+    dark: { dotFilled: '#007AFF', dotEmpty: '#333333' },
+  },
+  forest: {
+    name: 'Forest Green',
+    light: { dotFilled: '#34C759', dotEmpty: '#D1D1D6' },
+    dark: { dotFilled: '#30D158', dotEmpty: '#333333' },
+  },
+  sunset: {
+    name: 'Sunset Orange',
+    light: { dotFilled: '#FF9500', dotEmpty: '#D1D1D6' },
+    dark: { dotFilled: '#FF9F0A', dotEmpty: '#333333' },
+  },
+  monochrome: {
+    name: 'Monochrome',
+    light: { dotFilled: '#000000', dotEmpty: '#D1D1D6' },
+    dark: { dotFilled: '#FFFFFF', dotEmpty: '#333333' },
+  },
+};
+```
+
+### Color Palette Pattern
+
+- **Filled dots**: Vibrant accent color (past days)
+- **Empty dots**: Neutral gray (future days)
+- High contrast for accessibility
+- Consistent empty dot colors across themes
+
+## Typography
+
+**Location**: `constants/theme.ts:141-168`
+
+### Font Families
+
+```typescript
+export const Fonts = {
+  // SF Pro (default system font)
+  sans: 'System',
+
+  // New York (iOS serif) - for timeline titles
+  serif: Platform.select({
+    ios: 'ui-serif',
+    default: 'Georgia',
+    web: "'New York', Georgia, 'Times New Roman', serif",
+  }),
+
+  // Cormorant Garamond (elegant serif for timeline titles)
+  handwriting: 'CormorantGaramond-Regular',
+
+  // SF Pro Rounded (for future use)
+  rounded: Platform.select({
+    ios: 'ui-rounded',
+    default: 'System',
+    web: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', sans-serif",
+  }),
+
+  // Monospace (for future use)
+  mono: Platform.select({
+    ios: 'ui-monospace',
+    default: 'monospace',
+    web: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  }),
+};
+```
+
+### Font Sizes
+
+**Location**: `constants/theme.ts:174-195`
+
+Follows iOS Dynamic Type scale:
+
+```typescript
+export const FontSizes = {
+  // Large Titles (used sparingly)
+  largeTitle: 34,
+
+  // Titles
+  title1: 28,
+  title2: 22,
+  title3: 20,
+
+  // Headlines
+  headline: 17,
+
+  // Body
+  body: 17,
+  callout: 16,
+
+  // Supporting text
+  subheadline: 15,
+  footnote: 13,
+  caption1: 12,
+  caption2: 11,
+};
+```
+
+### Font Weights
+
+**Location**: `constants/theme.ts:201-206`
+
+```typescript
+export const FontWeights = {
+  regular: '400' as const,
+  medium: '500' as const,
+  semibold: '600' as const,
+  bold: '700' as const,
+};
+```
+
+### Typography Usage
+
+```tsx
+import { Fonts, FontSizes, FontWeights } from '@/constants/theme';
+
+<Text
+  style={{
+    fontFamily: Fonts.serif,
+    fontSize: FontSizes.title1,
+    fontWeight: FontWeights.semibold,
+  }}
+>
+  Timeline Title
+</Text>
+```
+
+## Spacing Scale
+
+**Location**: `constants/theme.ts:212-219`
+
+Consistent spacing throughout the app:
+
+```typescript
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+```
+
+**Usage**:
+
+```tsx
+import { Spacing } from '@/constants/theme';
+
+<View style={{ padding: Spacing.md, marginBottom: Spacing.lg }}>
+  {/* Content */}
+</View>
+```
+
+## Border Radius
+
+**Location**: `constants/theme.ts:225-231`
+
+Continuous corner radius (iOS style):
+
+```typescript
+export const BorderRadius = {
+  small: 8,
+  medium: 12,
+  large: 16,
+  xlarge: 20,
+  full: 9999,
+};
+```
+
+**Usage**:
+
+```tsx
+import { BorderRadius } from '@/constants/theme';
+
+<View style={{ borderRadius: BorderRadius.large }}>
+  {/* Content */}
+</View>
+```
+
+## Shadows
+
+**Location**: `constants/theme.ts:237-259`
+
+Subtle elevation for floating elements:
+
+```typescript
+export const Shadows = {
+  small: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  medium: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  large: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+};
+```
+
+**Usage**:
+
+```tsx
+import { Shadows } from '@/constants/theme';
+
+const styles = StyleSheet.create({
+  card: {
+    ...Shadows.medium,
+  },
+});
+```
+
+## Layout Constants
+
+**Location**: `constants/theme.ts:264-281`
+
+Layout-specific measurements:
+
+```typescript
+export const Layout = {
+  // Screen padding
+  screenPadding: 20,
+
+  // Card spacing
+  cardGap: 12,
+
+  // Grid dot sizing (calculated dynamically)
+  minDotSize: 6,
+  maxDotSize: 14,
+  dotSpacingRatioHorizontal: 0.25, // 25% of dot size
+  dotSpacingRatioVertical: 0.25,   // 25% of dot size
+};
+```
+
+## Animation Timing
+
+**Location**: `constants/theme.ts:287-295`
+
+Subtle, non-distracting animations:
+
+```typescript
+export const Animations = {
+  // Duration (milliseconds)
+  fast: 200,
+  normal: 300,
+  slow: 500,
+
+  // Easing (NEVER 'spring' or 'bounce')
+  easing: 'ease-in-out' as const,
+};
+```
+
+**Usage with React Native Reanimated**:
+
+```tsx
+import { withTiming, Easing } from 'react-native-reanimated';
+import { Animations } from '@/constants/theme';
+
+opacity.value = withTiming(1, {
+  duration: Animations.normal,
+  easing: Easing.out(Easing.cubic),
+});
+```
+
+## Haptics Configuration
+
+**Location**: `constants/theme.ts:301-305`
+
+Light, subtle haptic feedback:
+
+```typescript
+export const Haptics = {
+  tabPress: 'light' as const,
+  buttonPress: 'light' as const,
+  deleteAction: 'medium' as const,
+};
+```
+
+**Usage with Expo Haptics**:
+
+```tsx
+import * as ExpoHaptics from 'expo-haptics';
+import { Haptics } from '@/constants/theme';
+
+const handlePress = () => {
+  ExpoHaptics.impactAsync(ExpoHaptics.ImpactFeedbackStyle.Light);
+};
+```
+
+## Complete Theme Import
+
+Import all theme constants in one line:
+
+```tsx
+import {
+  Colors,
+  GridColorPalettes,
+  Fonts,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  Layout,
+  Animations,
+  Haptics,
+} from '@/constants/theme';
+```
+
+## Theme Modes
+
+The app supports three theme modes:
+
+1. **Light** - Light mode colors
+2. **Dark** - Dark mode colors (default)
+3. **System** - Follow system appearance
+
+### Theme Mode Selection
+
+Theme preference is stored in AsyncStorage and loaded in the root layout:
+
+```tsx
+import { getThemeMode, setThemeMode } from '@/services/storage';
+import { ThemeMode } from '@/types/timeline';
+
+// Get current theme
+const themeMode: ThemeMode = await getThemeMode();
+
+// Set theme
+await setThemeMode('dark');
+await setThemeMode('light');
+await setThemeMode('system');
+```
+
+### System Appearance
+
+Use React Native's `useColorScheme()` hook:
+
+```tsx
+import { useColorScheme, Appearance } from 'react-native';
+
+const colorScheme = useColorScheme(); // 'light' | 'dark' | null
+
+// Force appearance
+Appearance.setColorScheme('dark');
+Appearance.setColorScheme(null); // System default
+```
+
+## Best Practices
+
+### 1. Always Use Theme Constants
+
+```tsx
+// Good
+import { Spacing, Colors } from '@/constants/theme';
+const colors = Colors[colorScheme ?? 'dark'];
+
+// Bad
+const padding = 16; // Use Spacing.md instead
+const textColor = '#FFFFFF'; // Use colors.textPrimary
+```
+
+### 2. Respect Dark Mode First
+
+Default to dark mode when color scheme is unknown:
+
+```tsx
+const colors = Colors[colorScheme ?? 'dark'];
+```
+
+### 3. Use Semantic Color Names
+
+```tsx
+// Good
+backgroundColor: colors.cardBackground,
+color: colors.textPrimary,
+
+// Bad
+backgroundColor: '#1C1C1E',
+color: '#FFFFFF',
+```
+
+### 4. Follow Spacing Scale
+
+```tsx
+// Good
+padding: Spacing.md,
+marginBottom: Spacing.lg,
+
+// Bad
+padding: 15, // Not in scale
+marginBottom: 20, // Use Spacing constants
+```
+
+### 5. Use Spread for Shadows
+
+```tsx
+const styles = StyleSheet.create({
+  card: {
+    ...Shadows.medium,
+    backgroundColor: colors.cardBackground,
+  },
+});
+```

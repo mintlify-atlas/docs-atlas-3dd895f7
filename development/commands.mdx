@@ -1,0 +1,267 @@
+---
+title: Commands
+description: Available npm scripts and commands for Stoic Calendar development
+---
+
+## Development Commands
+
+All commands can be run with npm, yarn, or pnpm. Examples below use npm.
+
+### Starting the App
+
+#### Start Development Server
+
+Starts the Expo development server with Metro bundler:
+
+<CodeGroup>
+```bash npm
+npm start
+```
+
+```bash yarn
+yarn start
+```
+
+```bash pnpm
+pnpm start
+```
+</CodeGroup>
+
+Alternatively, use the Expo CLI directly:
+
+```bash
+npx expo start
+```
+
+Options:
+- Add `-c` flag to clear cache: `npx expo start -c`
+- Add `--tunnel` to use Expo tunnel: `npx expo start --tunnel`
+
+#### Run on Android
+
+Launches the app on an Android emulator or connected device:
+
+<CodeGroup>
+```bash npm
+npm run android
+```
+
+```bash yarn
+yarn android
+```
+
+```bash pnpm
+pnpm android
+```
+</CodeGroup>
+
+<Note>
+Ensure you have Android Studio installed and an emulator running, or a physical device connected via USB with USB debugging enabled.
+</Note>
+
+#### Run on iOS
+
+Launches the app on an iOS simulator (macOS only):
+
+<CodeGroup>
+```bash npm
+npm run ios
+```
+
+```bash yarn
+yarn ios
+```
+
+```bash pnpm
+pnpm ios
+```
+</CodeGroup>
+
+<Note>
+Requires Xcode and iOS Simulator to be installed on macOS.
+</Note>
+
+#### Run on Web
+
+Starts the app in a web browser:
+
+<CodeGroup>
+```bash npm
+npm run web
+```
+
+```bash yarn
+yarn web
+```
+
+```bash pnpm
+pnpm web
+```
+</CodeGroup>
+
+### Code Quality
+
+#### Lint Code
+
+Runs ESLint to check for code quality issues:
+
+<CodeGroup>
+```bash npm
+npm run lint
+```
+
+```bash yarn
+yarn lint
+```
+
+```bash pnpm
+pnpm lint
+```
+</CodeGroup>
+
+This uses `expo lint` under the hood with the project's ESLint configuration.
+
+### Build Commands
+
+#### Prebuild for iOS
+
+Generates native iOS project files and applies necessary patches:
+
+<CodeGroup>
+```bash npm
+npm run prebuild:ios
+```
+
+```bash yarn
+yarn prebuild:ios
+```
+
+```bash pnpm
+pnpm prebuild:ios
+```
+</CodeGroup>
+
+This command:
+1. Runs `expo prebuild --platform ios`
+2. Applies iOS-specific patches using `patch:ios` script
+
+#### Patch iOS Modules
+
+Applies patches to iOS native modules (runs automatically after prebuild):
+
+<CodeGroup>
+```bash npm
+npm run patch:ios
+```
+
+```bash yarn
+yarn patch:ios
+```
+
+```bash pnpm
+pnpm patch:ios
+```
+</CodeGroup>
+
+### Utility Commands
+
+#### Reset Project
+
+Resets the project to a blank state by moving starter code to `app-example/`:
+
+<CodeGroup>
+```bash npm
+npm run reset-project
+```
+
+```bash yarn
+yarn reset-project
+```
+
+```bash pnpm
+pnpm reset-project
+```
+</CodeGroup>
+
+<Warning>
+This command moves existing code to the `app-example/` directory and creates a blank `app/` directory. Use with caution.
+</Warning>
+
+### Post-Install Scripts
+
+#### Automatic Patching
+
+The `postinstall` script runs automatically after `npm install` and applies iOS patches if necessary:
+
+```json
+"postinstall": "test -f ios/Pods/Target\\ Support\\ Files/Pods-stoiccalendar/ExpoModulesProvider.swift && npm run patch:ios || true"
+```
+
+This ensures iOS modules are properly patched after installing dependencies.
+
+## Expo CLI Commands
+
+You can also use Expo CLI commands directly:
+
+### Install Dependencies
+
+```bash
+npx expo install <package-name>
+```
+
+Recommended for installing Expo-compatible packages.
+
+### Upgrade Expo
+
+```bash
+npx expo upgrade
+```
+
+Upgrades Expo SDK and related dependencies.
+
+### Doctor
+
+```bash
+npx expo doctor
+```
+
+Checks for common issues in your project.
+
+### Build for Production
+
+```bash
+eas build --platform ios
+eas build --platform android
+```
+
+<Note>
+Production builds require Expo Application Services (EAS). See [Expo EAS documentation](https://docs.expo.dev/build/introduction/) for setup.
+</Note>
+
+## Environment-Specific Commands
+
+### Clear Cache
+
+If you encounter module resolution or caching issues:
+
+```bash
+npx expo start -c
+```
+
+### Reset Metro Bundler
+
+Reset the Metro bundler cache:
+
+```bash
+npx react-native start --reset-cache
+```
+
+### Clean Build Artifacts
+
+Remove generated native directories:
+
+```bash
+rm -rf ios android
+```
+
+Then run `prebuild:ios` or `expo prebuild` to regenerate them.

@@ -1,0 +1,518 @@
+---
+title: Firebase Integration
+description: Future cloud sync and authentication structure
+---
+
+The Firebase Service provides a structure for future cloud sync, authentication, and multi-device timeline synchronization. 
+
+**Status**: Not active in MVP (placeholder only)
+
+## Overview
+
+**File**: `services/firebase-service.ts`
+
+The current implementation contains placeholder functions with detailed TODO comments for future implementation. The data model is already Firebase-ready, using ISO 8601 date strings and flat structures suitable for Firestore.
+
+## Current Implementation
+
+All functions are placeholders that log warnings:
+
+```typescript
+export function initializeFirebase(): void {
+  console.log('Firebase: Structure ready, not initialized');
+}
+
+export async function syncTimelines(): Promise<void> {
+  console.log('Firebase: syncTimelines called, but not implemented');
+}
+```
+
+## Planned Architecture
+
+### Data Structure
+
+Timelines will be stored in Firestore with this structure:
+
+```
+users/
+  {userId}/
+    timelines/
+      {timelineId}/
+        - id: string
+        - type: string
+        - title: string
+        - startDate: string (ISO 8601)
+        - endDate: string (ISO 8601)
+        - createdAt: string (ISO 8601)
+        - isActive: boolean
+        - widgetPreferences: object (optional)
+```
+
+**Why it's Firebase-ready**:
+- All dates use ISO 8601 strings (Firestore Timestamp compatible)
+- Flat structure (no deeply nested objects)
+- Unique IDs (UUID v4)
+- No circular references
+
+### Authentication Providers
+
+Planned authentication methods:
+
+1. **Google Sign-In**
+2. **Apple Sign-In** (required for iOS App Store)
+3. Anonymous auth (optional for free tier)
+
+## Planned Functions
+
+### initializeFirebase()
+
+Initialize Firebase SDK:
+
+```typescript
+export function initializeFirebase(): void
+```
+
+**Implementation plan**:
+
+```typescript
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+```
+
+**Required packages**:
+
+```bash
+npm install firebase
+```
+
+### syncTimelines()
+
+Sync local AsyncStorage with Firestore:
+
+```typescript
+export async function syncTimelines(): Promise<void>
+```
+
+**Implementation plan**:
+
+1. Get current user ID from auth
+2. Fetch timelines from Firestore for this user
+3. Merge with local timelines (conflict resolution)
+4. Update both local AsyncStorage and Firestore
+5. Set up real-time listeners for changes
+
+**Conflict resolution strategy**:
+- Compare `createdAt` and `updatedAt` timestamps
+- Newer version wins
+- Deleted items tracked separately
+
+**Example implementation**:
+
+```typescript
+import { collection, query, getDocs, onSnapshot } from 'firebase/firestore';
+import { loadTimelines, saveTimelines } from '@/services/storage';
+
+export async function syncTimelines(): Promise<void> {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error('Not authenticated');
+
+  // Fetch remote timelines
+  const q = query(collection(db, `users/${userId}/timelines`));
+  const snapshot = await getDocs(q);
+  const remoteTimelines = snapshot.docs.map(doc => doc.data() as Timeline);
+
+  // Fetch local timelines
+  const localTimelines = await loadTimelines();
+
+  // Merge (newer wins)
+  const merged = mergeTimelines(localTimelines, remoteTimelines);
+
+  // Update both
+  await saveTimelines(merged);
+  await uploadAllTimelines(merged);
+
+  // Listen for changes
+  onSnapshot(q, (snapshot) => {
+    // Update local when remote changes
+  });
+}
+```
+
+### uploadTimeline()
+
+Upload a single timeline to Firestore:
+
+```typescript
+export async function uploadTimeline(timeline: Timeline): Promise<void>
+```
+
+**Implementation plan**:
+
+```typescript
+import { collection, doc, setDoc } from 'firebase/firestore';
+
+export async function uploadTimeline(timeline: Timeline): Promise<void> {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error('Not authenticated');
+
+  await setDoc(
+    doc(db, `users/${userId}/timelines`, timeline.id),
+    timeline
+  );
+}
+```
+
+**Call after**:
+- Creating timeline
+- Updating timeline
+- Switching active timeline
+
+### deleteTimelineFromFirestore()
+
+Delete timeline from Firestore:
+
+```typescript
+export async function deleteTimelineFromFirestore(timelineId: string): Promise<void>
+```
+
+**Implementation plan**:
+
+```typescript
+import { doc, deleteDoc } from 'firebase/firestore';
+
+export async function deleteTimelineFromFirestore(timelineId: string): Promise<void> {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error('Not authenticated');
+
+  await deleteDoc(doc(db, `users/${userId}/timelines`, timelineId));
+}
+```
+
+### signInWithGoogle()
+
+Google Sign-In authentication:
+
+```typescript
+export async function signInWithGoogle(): Promise<void>
+```
+
+**Implementation plan**:
+
+```typescript
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+
+export async function signInWithGoogle(): Promise<void> {
+  // Configure Google Sign-In
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+
+  // Sign in with Google
+  const { idToken } = await GoogleSignin.signIn();
+  
+  // Create Firebase credential
+  const googleCredential = GoogleAuthProvider.credential(idToken);
+  
+  // Sign in to Firebase
+  await signInWithCredential(auth, googleCredential);
+  
+  // Sync with RevenueCat
+  const { loginUser } = await import('@/services/revenue-cat-service');
+  await loginUser(auth.currentUser!.uid);
+}
+```
+
+**Required packages**:
+
+```bash
+npm install @react-native-google-signin/google-signin
+```
+
+### signInWithApple()
+
+Apple Sign-In authentication:
+
+```typescript
+export async function signInWithApple(): Promise<void>
+```
+
+**Implementation plan**:
+
+```typescript
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { signInWithCredential, OAuthProvider } from 'firebase/auth';
+
+export async function signInWithApple(): Promise<void> {
+  // Request Apple authentication
+  const credential = await AppleAuthentication.signInAsync({
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+    ],
+  });
+
+  // Create Firebase credential
+  const provider = new OAuthProvider('apple.com');
+  const oauthCredential = provider.credential({
+    idToken: credential.identityToken!,
+  });
+
+  // Sign in to Firebase
+  await signInWithCredential(auth, oauthCredential);
+  
+  // Sync with RevenueCat
+  const { loginUser } = await import('@/services/revenue-cat-service');
+  await loginUser(auth.currentUser!.uid);
+}
+```
+
+**Required packages**:
+
+```bash
+npx expo install expo-apple-authentication
+```
+
+### signOut()
+
+Sign out user:
+
+```typescript
+export async function signOut(): Promise<void>
+```
+
+**Implementation plan**:
+
+```typescript
+import { signOut as firebaseSignOut } from 'firebase/auth';
+
+export async function signOut(): Promise<void> {
+  // Sign out from Firebase
+  await firebaseSignOut(auth);
+  
+  // Sign out from RevenueCat
+  const { logoutUser } = await import('@/services/revenue-cat-service');
+  await logoutUser();
+  
+  // Clear local data (optional)
+  // await clearAllTimelines();
+}
+```
+
+### getCurrentUser()
+
+Get current authenticated user:
+
+```typescript
+export function getCurrentUser(): any
+```
+
+**Implementation plan**:
+
+```typescript
+export function getCurrentUser() {
+  return auth.currentUser;
+}
+```
+
+## Integration with RevenueCat
+
+When implementing Firebase auth, sync with RevenueCat:
+
+```typescript
+// After Firebase sign-in
+const { loginUser } = await import('@/services/revenue-cat-service');
+await loginUser(firebaseUser.uid);
+
+// After Firebase sign-out
+const { logoutUser } = await import('@/services/revenue-cat-service');
+await logoutUser();
+```
+
+This enables:
+- Cross-device subscription access
+- Purchase restoration on new devices
+- Unified user identity
+
+## Pro-Only Feature
+
+Cloud sync will be a Pro-only feature:
+
+```typescript
+import { isPro } from '@/services/revenue-cat-service';
+
+async function enableCloudSync() {
+  const hasPro = await isPro();
+  
+  if (!hasPro) {
+    // Show paywall
+    navigation.navigate('Paywall');
+    return;
+  }
+  
+  // Enable Firebase sync
+  await signInWithGoogle();
+  await syncTimelines();
+}
+```
+
+## Security Rules
+
+Firestore security rules to implement:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /timelines/{timelineId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+```
+
+## Migration Strategy
+
+When activating Firebase:
+
+1. **Phase 1**: Add Firebase SDK and auth UI
+2. **Phase 2**: Implement upload on timeline changes (one-way sync)
+3. **Phase 3**: Implement download on app launch (merge strategy)
+4. **Phase 4**: Add real-time listeners for multi-device sync
+5. **Phase 5**: Conflict resolution and offline support
+
+### Migration Code
+
+Upload existing local timelines on first sign-in:
+
+```typescript
+async function migrateLocalToCloud() {
+  const localTimelines = await loadTimelines();
+  
+  for (const timeline of localTimelines) {
+    await uploadTimeline(timeline);
+  }
+  
+  console.log(`Migrated ${localTimelines.length} timelines to cloud`);
+}
+```
+
+## Offline Support
+
+Firestore has built-in offline support:
+
+```typescript
+import { enableIndexedDbPersistence } from 'firebase/firestore';
+
+// Enable offline persistence
+await enableIndexedDbPersistence(db);
+```
+
+This automatically:
+- Caches data locally
+- Syncs when connection returns
+- Handles conflicts
+
+## Real-Time Sync
+
+Listen for changes across devices:
+
+```typescript
+import { onSnapshot, collection, query } from 'firebase/firestore';
+
+function listenToTimelines(userId: string, callback: (timelines: Timeline[]) => void) {
+  const q = query(collection(db, `users/${userId}/timelines`));
+  
+  return onSnapshot(q, (snapshot) => {
+    const timelines = snapshot.docs.map(doc => doc.data() as Timeline);
+    callback(timelines);
+  });
+}
+
+// Usage
+const unsubscribe = listenToTimelines(userId, async (timelines) => {
+  // Update local storage
+  await saveTimelines(timelines);
+  
+  // Update UI
+  setTimelines(timelines);
+});
+
+// Cleanup
+unsubscribe();
+```
+
+## Environment Variables
+
+Add to `.env`:
+
+```bash
+# Firebase
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Google Sign-In
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your_web_client_id
+```
+
+## Installation Checklist
+
+When ready to implement:
+
+- [ ] Install Firebase SDK: `npm install firebase`
+- [ ] Install Google Sign-In: `npm install @react-native-google-signin/google-signin`
+- [ ] Install Apple Auth: `npx expo install expo-apple-authentication`
+- [ ] Create Firebase project in console
+- [ ] Enable Authentication providers
+- [ ] Create Firestore database
+- [ ] Configure security rules
+- [ ] Add environment variables
+- [ ] Configure OAuth credentials
+- [ ] Test authentication flow
+- [ ] Implement sync functions
+- [ ] Add real-time listeners
+- [ ] Test multi-device sync
+- [ ] Test offline mode
+- [ ] Migrate existing users
+
+## Testing Strategy
+
+1. **Authentication**: Test Google and Apple sign-in flows
+2. **Upload**: Create timeline, verify in Firestore console
+3. **Download**: Sign in on new device, verify timelines sync
+4. **Conflict**: Modify same timeline on two devices, verify merge
+5. **Offline**: Disable network, modify data, reconnect, verify sync
+6. **Real-time**: Modify on one device, verify updates on other
+7. **Pro gating**: Verify only Pro users can enable sync
+
+## Future Enhancements
+
+- Settings sync (theme, preferences)
+- Activity log (timeline history)
+- Backup/restore functionality
+- Export to CSV/JSON
+- Shared timelines (family/team)
+- Web dashboard

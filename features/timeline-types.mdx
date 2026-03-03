@@ -1,0 +1,255 @@
+---
+title: 'Timeline Types'
+description: 'Understand the four timeline types in Stoic Calendar: Year, Month, Week, and Custom'
+icon: 'calendar'
+---
+
+Stoic Calendar offers four timeline types to help you visualize time at different scales. Each timeline displays as a grid where every square represents one day, making time passage tangible and clear.
+
+## Year Timeline
+
+Track an entire year from January 1st to December 31st.
+
+<Card title="Perfect for" icon="calendar-days">
+  Annual goals, year-long projects, and seeing the full picture of your year
+</Card>
+
+### How it Works
+
+- **Total Days**: 365 days (366 in leap years)
+- **Title Format**: Displays the year (e.g., "2026")
+- **Grid Layout**: Automatically calculated to fit your screen
+- **Auto-Update**: Can be created for any past, present, or future year
+
+### Creating a Year Timeline
+
+1. Navigate to the Timelines screen
+2. Tap the "+" button
+3. Select "Year"
+4. Choose the year you want to track
+5. The timeline will be created with the title matching the year (e.g., "2026")
+
+<Note>
+  Year timelines display a fixed 365-day period. If you want to track "the current year" that updates automatically, create a new year timeline each January.
+</Note>
+
+---
+
+## Month Timeline
+
+Focus on a single month to track short-term goals and habits.
+
+<Card title="Perfect for" icon="calendar-week">
+  Monthly challenges, habit tracking, and sprint planning
+</Card>
+
+### How it Works
+
+- **Total Days**: 28-31 days depending on the month
+- **Title Format**: Displays the month name (e.g., "January", "February")
+- **Grid Layout**: Typically 4-5 rows representing weeks
+- **Auto-Update**: The current month timeline automatically updates when a new month begins
+
+### Creating a Month Timeline
+
+1. Navigate to the Timelines screen
+2. Tap the "+" button
+3. Select "Month"
+4. Choose the month and year
+5. The timeline will be created with the month name as the title
+
+<Tip>
+  Month timelines are great for building consistency. Seeing each day as a square makes it easier to maintain streaks and notice patterns.
+</Tip>
+
+---
+
+## Week Timeline
+
+Track the current week from Monday to Sunday.
+
+<Card title="Perfect for" icon="calendar-range">
+  Weekly sprints, immediate focus, and short-term accountability
+</Card>
+
+### How it Works
+
+- **Total Days**: 7 days (Monday through Sunday)
+- **Title**: Always displays as "This Week"
+- **Grid Layout**: Single row of 7 squares
+- **Auto-Update**: Automatically updates to the current week when a new week begins
+
+### Creating a Week Timeline
+
+1. Navigate to the Timelines screen
+2. Tap the "+" button
+3. Select "Week"
+4. The timeline will be created for the current week
+
+<Warning>
+  Week timelines always track the **current week**. The app automatically detects when a new week starts and updates the timeline dates. This ensures your week timeline always shows Monday-Sunday of the current week.
+</Warning>
+
+### Week Boundaries
+
+Week timelines use the Monday-Sunday convention:
+- **Week Start**: Monday at 00:00:00
+- **Week End**: Sunday at 23:59:59
+
+---
+
+## Custom Timeline
+
+Create a timeline for any specific date range that matters to you.
+
+<Card title="Perfect for" icon="calendar-plus">
+  Project deadlines, countdowns to events, trip planning, or any custom time period
+</Card>
+
+### How it Works
+
+- **Total Days**: Any number of days you specify
+- **Title**: Your custom title (e.g., "Launch Project", "Summer Break", "Training Program")
+- **Grid Layout**: Calculated based on total days
+- **No Auto-Update**: Custom timelines remain fixed to your chosen dates
+
+### Creating a Custom Timeline
+
+1. Navigate to the Timelines screen
+2. Tap the "+" button
+3. Select "Custom"
+4. Choose your start date and end date
+5. Enter a custom title for your timeline
+6. The timeline will be created with your exact specifications
+
+<Tip>
+  Custom timelines are incredibly flexible. Use them for:
+  - Project deadlines ("Product Launch - 90 days")
+  - Life events ("Days until graduation")
+  - Seasonal tracking ("Summer 2026")
+  - Training programs ("12-week fitness plan")
+</Tip>
+
+---
+
+## Timeline Statistics
+
+All timeline types display the same progress metrics:
+
+<CardGroup cols={2}>
+  <Card title="Days Passed" icon="check">
+    The number of complete days from the start date until today
+  </Card>
+  <Card title="Days Remaining" icon="hourglass">
+    The number of days from today until the end date
+  </Card>
+  <Card title="Total Days" icon="calendar">
+    The complete duration of the timeline from start to end
+  </Card>
+  <Card title="Progress Percentage" icon="chart-line">
+    Completion percentage (0-100%) calculated from days passed
+  </Card>
+</CardGroup>
+
+### Progress Calculation
+
+The progress percentage is calculated as:
+
+```typescript
+progressPercentage = (daysPassed / totalDays) * 100
+```
+
+- **0%**: Timeline just started
+- **50%**: Halfway through the timeline
+- **100%**: Timeline completed
+
+---
+
+## Active Timeline
+
+Only one timeline can be **active** at a time. The active timeline is displayed on your Home screen.
+
+<Steps>
+  <Step title="View on Home Screen">
+    Your active timeline appears as a full grid on the Home screen
+  </Step>
+  <Step title="Switch Active Timeline">
+    Tap any timeline card in the Timelines screen to make it active
+  </Step>
+  <Step title="Automatic Switch">
+    When you switch timelines, the previous active timeline is automatically deactivated
+  </Step>
+</Steps>
+
+<Note>
+  The active timeline indicator appears as a blue accent on the timeline card in the Timelines list.
+</Note>
+
+---
+
+## Timeline Management
+
+### Creating Multiple Timelines
+
+- **Free**: Create up to 3 timelines (including 1 custom timeline)
+- **Pro**: Create unlimited timelines and unlimited custom timelines
+
+### Editing Timelines
+
+- Year and Month timelines can have their date range adjusted
+- Week timelines cannot be edited (they auto-update)
+- Custom timelines can have their title, start date, and end date changed
+
+### Deleting Timelines
+
+Swipe left on any timeline in the Timelines screen to reveal the delete option. Deleting a timeline is permanent and cannot be undone.
+
+<Warning>
+  If you delete your active timeline, you'll need to select a new active timeline from your remaining timelines.
+</Warning>
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Year timelines for perspective">
+    Year timelines help you see the bigger picture. Each day becomes one small square in a year of 365 squares, making individual days feel less overwhelming.
+  </Accordion>
+  
+  <Accordion title="Use Month timelines for consistency">
+    Month timelines are perfect for building habits. The compact 28-31 day grid makes it easy to see patterns and maintain streaks.
+  </Accordion>
+  
+  <Accordion title="Use Week timelines for focus">
+    Week timelines keep you grounded in the present. Seven squares represent your immediate horizon, helping you focus on what matters this week.
+  </Accordion>
+  
+  <Accordion title="Use Custom timelines for deadlines">
+    Custom timelines are ideal for projects with specific end dates. Watching the grid fill up creates a tangible sense of progress toward your goal.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Technical Details
+
+### Date Format
+
+All timeline dates are stored in ISO 8601 format:
+```
+2026-01-01T00:00:00.000Z
+```
+
+### Timeline ID
+
+Each timeline has a unique identifier generated at creation time.
+
+### Timeline Validation
+
+The app validates that:
+- Start date is before end date
+- All required fields are present
+- Dates are valid calendar dates
+
+For more details, see the source code at `types/timeline.ts:5` and `services/timeline-calculator.ts:58`.

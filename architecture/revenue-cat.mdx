@@ -1,0 +1,443 @@
+---
+title: RevenueCat Service
+description: Subscription management and Pro entitlements
+---
+
+The RevenueCat Service handles all subscription management, purchase flows, and Pro feature gating using the RevenueCat SDK.
+
+## Overview
+
+**Status**: MVP (Active)
+
+**File**: `services/revenue-cat-service.ts`
+
+**SDK**: `react-native-purchases` (RevenueCat)
+
+## Configuration
+
+### API Key
+
+Loaded from environment variable:
+
+```typescript
+const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY || '';
+```
+
+Set in `.env`:
+
+```bash
+EXPO_PUBLIC_REVENUECAT_API_KEY=your_key_here
+```
+
+**Important**: Never commit API keys to version control.
+
+### Entitlements
+
+```typescript
+export const ENTITLEMENTS = {
+  PRO: 'Memento Calendar Pro',
+} as const;
+```
+
+### Products
+
+```typescript
+export const PRODUCT_IDS = {
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+} as const;
+```
+
+## Initialization
+
+### initializeRevenueCat()
+
+Must be called once on app startup:
+
+```typescript
+export async function initializeRevenueCat(): Promise<void>
+```
+
+**Usage**:
+
+```typescript
+import { initializeRevenueCat } from '@/services/revenue-cat-service';
+
+// In app/_layout.tsx
+useEffect(() => {
+  initializeRevenueCat();
+}, []);
+```
+
+**Behavior**:
+- Skips initialization in mock mode (for Expo Go)
+- Enables debug logs in development
+- Configures SDK with API key
+- Tracks initialization state to prevent duplicate calls
+
+## Core Functions
+
+### isPro()
+
+Check if user has active Pro subscription:
+
+```typescript
+export async function isPro(): Promise<boolean>
+```
+
+**Usage**:
+
+```typescript
+import { isPro } from '@/services/revenue-cat-service';
+
+const hasPro = await isPro();
+
+if (hasPro) {
+  // Show Pro features
+} else {
+  // Show paywall
+}
+```
+
+**Behavior**:
+- Fetches customer info from RevenueCat
+- Checks for active "Memento Calendar Pro" entitlement
+- Returns `false` on error (fail-safe)
+
+### getCustomerInfo()
+
+Get full customer purchase and subscription info:
+
+```typescript
+export async function getCustomerInfo(): Promise<CustomerInfo>
+```
+
+**Usage**:
+
+```typescript
+import { getCustomerInfo } from '@/services/revenue-cat-service';
+
+const info = await getCustomerInfo();
+console.log('Active subscriptions:', info.activeSubscriptions);
+console.log('Entitlements:', Object.keys(info.entitlements.active));
+```
+
+**Returns**: RevenueCat `CustomerInfo` object with:
+- `entitlements.active` - Active entitlements
+- `activeSubscriptions` - Active subscription product IDs
+- `allPurchasedProductIdentifiers` - All purchased products
+- `latestExpirationDate` - Latest subscription expiration
+
+### getOfferings()
+
+Get available subscription offerings:
+
+```typescript
+export async function getOfferings(): Promise<PurchasesOffering | null>
+```
+
+**Usage**:
+
+```typescript
+import { getOfferings } from '@/services/revenue-cat-service';
+
+const offering = await getOfferings();
+
+if (offering) {
+  const monthly = offering.monthly;
+  const yearly = offering.annual;
+  
+  console.log('Monthly:', monthly?.product.priceString);
+  console.log('Yearly:', yearly?.product.priceString);
+}
+```
+
+**Returns**: Current offering with:
+- `monthly` - Monthly subscription package
+- `annual` - Yearly subscription package
+- `availablePackages` - All available packages
+
+### purchasePackage()
+
+Purchase a subscription package:
+
+```typescript
+export async function purchasePackage(
+  packageToPurchase: PurchasesPackage
+): Promise<{ customerInfo: CustomerInfo; userCancelled: boolean }>
+```
+
+**Usage**:
+
+```typescript
+import { getOfferings, purchasePackage } from '@/services/revenue-cat-service';
+
+const offering = await getOfferings();
+if (!offering?.monthly) return;
+
+try {
+  const { customerInfo, userCancelled } = await purchasePackage(offering.monthly);
+  
+  if (userCancelled) {
+    console.log('User cancelled purchase');
+  } else {
+    console.log('Purchase successful!');
+    // Navigate to Pro features
+  }
+} catch (error) {
+  console.error('Purchase failed:', error);
+}
+```
+
+**Behavior**:
+- Handles App Store/Play Store purchase flow
+- Returns `userCancelled: true` if user cancels
+- Throws error on purchase failure
+- **Automatically syncs Pro status to widgets**
+
+### restorePurchases()
+
+Restore previous purchases from App Store/Play Store:
+
+```typescript
+export async function restorePurchases(): Promise<CustomerInfo>
+```
+
+**Usage**:
+
+```typescript
+import { restorePurchases } from '@/services/revenue-cat-service';
+
+try {
+  const customerInfo = await restorePurchases();
+  console.log('Purchases restored');
+  console.log('Active entitlements:', Object.keys(customerInfo.entitlements.active));
+} catch (error) {
+  console.error('Restore failed:', error);
+}
+```
+
+**Behavior**:
+- Syncs with App Store/Play Store
+- Restores all previous purchases
+- **Automatically syncs Pro status to widgets**
+
+## Pro Features Configuration
+
+### PRO_FEATURES
+
+Defines which features are Pro-only:
+
+```typescript
+export const PRO_FEATURES = {
+  UNLIMITED_TIMELINES: true,
+  UNLIMITED_CUSTOM_TIMELINES: true,
+  ALL_WIDGET_SIZES: true,
+  CUSTOM_ACCENT_COLORS: true,      // Future feature
+  CLOUD_SYNC: true,                 // Future feature with Firebase
+  PRIORITY_SUPPORT: true,
+} as const;
+```
+
+### FREE_TIER_LIMITS
+
+Defines limits for free users:
+
+```typescript
+export const FREE_TIER_LIMITS = {
+  MAX_TIMELINES: 3,
+  MAX_CUSTOM_TIMELINES: 1,
+  WIDGET_SIZES: ['small', 'medium'], // Pro unlocks 'large'
+} as const;
+```
+
+### isFeatureAvailable()
+
+Check if specific feature is available:
+
+```typescript
+export async function isFeatureAvailable(
+  feature: keyof typeof PRO_FEATURES
+): Promise<boolean>
+```
+
+**Usage**:
+
+```typescript
+import { isFeatureAvailable } from '@/services/revenue-cat-service';
+
+const canCreateTimeline = await isFeatureAvailable('UNLIMITED_TIMELINES');
+
+if (!canCreateTimeline) {
+  // Show paywall
+} else {
+  // Allow timeline creation
+}
+```
+
+## Feature Gating Example
+
+Complete example of Pro feature gating:
+
+```typescript
+import { isPro, FREE_TIER_LIMITS } from '@/services/revenue-cat-service';
+import { loadTimelines } from '@/services/storage';
+
+async function canCreateTimeline(): Promise<boolean> {
+  const hasPro = await isPro();
+  
+  if (hasPro) {
+    return true; // Unlimited for Pro
+  }
+  
+  // Check free tier limit
+  const timelines = await loadTimelines();
+  return timelines.length < FREE_TIER_LIMITS.MAX_TIMELINES;
+}
+
+async function handleCreateTimeline() {
+  const canCreate = await canCreateTimeline();
+  
+  if (!canCreate) {
+    // Show paywall
+    navigation.navigate('Paywall');
+    return;
+  }
+  
+  // Create timeline
+  const newTimeline = createTimeline(/* ... */);
+  await saveTimeline(newTimeline);
+}
+```
+
+## User Management
+
+### getAnonymousUserId()
+
+Get RevenueCat anonymous user ID for support:
+
+```typescript
+export async function getAnonymousUserId(): Promise<string>
+```
+
+**Usage**:
+
+```typescript
+import { getAnonymousUserId } from '@/services/revenue-cat-service';
+
+const userId = await getAnonymousUserId();
+console.log('User ID for support:', userId);
+```
+
+### loginUser()
+
+Login user with custom ID (for cross-device sync):
+
+```typescript
+export async function loginUser(userId: string): Promise<CustomerInfo>
+```
+
+**Usage**:
+
+```typescript
+import { loginUser } from '@/services/revenue-cat-service';
+
+// After user logs in with your auth system
+const customerInfo = await loginUser(user.uid);
+```
+
+**Note**: Future feature for Firebase integration.
+
+### logoutUser()
+
+Logout user:
+
+```typescript
+export async function logoutUser(): Promise<CustomerInfo>
+```
+
+**Usage**:
+
+```typescript
+import { logoutUser } from '@/services/revenue-cat-service';
+
+await logoutUser();
+```
+
+## Widget Integration
+
+The service automatically syncs Pro status to widgets:
+
+```typescript
+// In purchasePackage()
+try {
+  const { syncProStatusToWidget } = await import('@/services/widget-data-service');
+  await syncProStatusToWidget();
+} catch (widgetError) {
+  console.warn('Failed to sync Pro status to widgets:', widgetError);
+}
+```
+
+This happens automatically after:
+- Successful purchase
+- Successful restore
+
+Widgets use Pro status to:
+- Show/hide Pro-only widget sizes
+- Display Pro badge
+- Gate premium features
+
+## Mock Mode (Development)
+
+For testing in Expo Go or without store setup:
+
+```typescript
+const MOCK_OFFERINGS_ENABLED = __DEV__ && false; // Set to true to enable
+```
+
+When enabled:
+- Skips RevenueCat initialization
+- Returns mock offerings with test prices
+- Useful for UI development without store config
+
+**Mock offerings**:
+- Monthly: `memento_monthly` at $2.99
+- Yearly: `memento_yearly` at $19.99 (with 1 week free trial)
+
+## Error Handling
+
+All functions handle errors gracefully:
+
+```typescript
+try {
+  const hasPro = await isPro();
+} catch (error) {
+  console.error('Error checking pro status:', error);
+  // Fail-safe: assume not Pro on error
+}
+```
+
+Key error scenarios:
+- Not initialized: Throws error
+- Network failure: Throws error
+- User cancellation: Returns `userCancelled: true`
+- Store error: Throws error
+
+## Best Practices
+
+1. **Initialize early**: Call `initializeRevenueCat()` in app root
+2. **Check Pro status**: Always check `isPro()` before gating features
+3. **Handle cancellation**: Check `userCancelled` in purchase flow
+4. **Restore purchases**: Provide restore button in settings
+5. **Mock for development**: Use mock mode for UI development
+6. **Error handling**: Always wrap calls in try-catch
+7. **User feedback**: Show loading states during purchase/restore
+
+## Future Enhancements
+
+- Custom accent colors (gated behind Pro)
+- Cloud sync with Firebase (Pro-only)
+- Large widget size (Pro-only)
+- Priority support channel
+- Promotional offers
+- Lifetime purchase option

@@ -1,0 +1,392 @@
+---
+title: Code Style Guidelines
+description: TypeScript and React Native coding standards for Stoic Calendar
+---
+
+## Overview
+
+Stoic Calendar follows strict TypeScript patterns with a focus on clarity, maintainability, and Firebase-ready data structures.
+
+## Linting Configuration
+
+### ESLint Setup
+
+The project uses Expo's official ESLint configuration:
+
+```js
+// eslint.config.js
+const { defineConfig } = require('eslint/config');
+const expoConfig = require('eslint-config-expo/flat');
+
+module.exports = defineConfig([
+  expoConfig,
+  {
+    ignores: ['dist/*'],
+  },
+]);
+```
+
+### Running the Linter
+
+```bash
+npm run lint    # Run ESLint via expo lint
+```
+
+## TypeScript Configuration
+
+### Compiler Options
+
+The project uses strict TypeScript mode:
+
+```json
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+**Key Points:**
+- Strict mode is enabled (all strict checks active)
+- Path aliases use `@/` for root imports
+- Extends Expo's base configuration
+
+### Path Aliases
+
+Always use `@/` for imports:
+
+```typescript
+// Good
+import { Timeline } from '@/types/timeline';
+import { loadTimelines } from '@/services/storage';
+import { StoicGrid } from '@/components/stoic-grid';
+
+// Bad
+import { Timeline } from '../types/timeline';
+import { loadTimelines } from '../../services/storage';
+```
+
+## File Organization
+
+### Component Structure
+
+Components follow this pattern:
+
+```typescript
+/**
+ * Component Name
+ * Brief description of purpose and key principles
+ */
+
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { ComponentProps } from '@/types/component';
+
+export interface ComponentNameProps {
+  /**
+   * Prop description
+   */
+  propName: string;
+
+  /**
+   * Optional prop with default
+   * @default false
+   */
+  optional?: boolean;
+}
+
+export function ComponentName({ propName, optional = false }: ComponentNameProps) {
+  // Component logic
+  return (
+    <View style={styles.container}>
+      {/* Component JSX */}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+```
+
+### Service Structure
+
+Services follow this pattern:
+
+```typescript
+/**
+ * Service Name
+ * Description of service purpose and responsibilities
+ */
+
+import { Type } from '@/types/timeline';
+
+/**
+ * Function description
+ * @param param - Parameter description
+ * @returns Return value description
+ */
+export async function functionName(param: string): Promise<Type> {
+  try {
+    // Implementation
+    return result;
+  } catch (error) {
+    console.error('Error in functionName:', error);
+    throw error;
+  }
+}
+```
+
+## Naming Conventions
+
+### Files and Folders
+
+- Components: `kebab-case.tsx` (e.g., `stoic-grid.tsx`)
+- Services: `kebab-case.ts` (e.g., `firebase-service.ts`)
+- Utils: `kebab-case.ts` (e.g., `date-helpers.ts`)
+- Types: `kebab-case.ts` (e.g., `timeline.ts`)
+
+### Code Elements
+
+```typescript
+// Components: PascalCase
+export function StoicGrid() {}
+
+// Interfaces: PascalCase
+export interface Timeline {}
+
+// Functions: camelCase
+export function loadTimelines() {}
+
+// Constants: SCREAMING_SNAKE_CASE
+const STORAGE_KEYS = {
+  TIMELINES: '@stoic_calendar:timelines',
+} as const;
+
+// Enums: PascalCase keys, SCREAMING_SNAKE_CASE values
+export const TimelineType = {
+  YEAR: 'year',
+  MONTH: 'month',
+  WEEK: 'week',
+  CUSTOM: 'custom',
+} as const;
+```
+
+## Documentation Comments
+
+### JSDoc for Public APIs
+
+All exported functions, components, and types must have JSDoc comments:
+
+```typescript
+/**
+ * Load all timelines from storage
+ * @returns Array of timelines (empty array if none exist)
+ */
+export async function loadTimelines(): Promise<Timeline[]> {
+  // Implementation
+}
+
+/**
+ * Stoic Grid Component
+ * The core visualization: 1 dot = 1 day
+ */
+export function StoicGrid({ timeline }: StoicGridProps) {
+  // Implementation
+}
+```
+
+### Inline Comments
+
+Use inline comments for complex logic:
+
+```typescript
+// Calculate wave delay based on dot position
+// Max 600ms total delay across all dots
+const maxDelay = Math.min(totalDots * 1.5, 600);
+const delay = (index / totalDots) * maxDelay;
+```
+
+## React Native Patterns
+
+### Hooks Usage
+
+```typescript
+export function Component() {
+  // State hooks
+  const [state, setState] = useState<Type>(initialValue);
+  
+  // Memoized values
+  const memoizedValue = useMemo(() => {
+    return expensiveComputation();
+  }, [dependencies]);
+  
+  // Callbacks
+  const handleAction = useCallback(() => {
+    // Handler logic
+  }, [dependencies]);
+  
+  // Effects
+  useEffect(() => {
+    // Effect logic
+    return () => {
+      // Cleanup
+    };
+  }, [dependencies]);
+}
+```
+
+### StyleSheet Pattern
+
+Always use `StyleSheet.create()` at the bottom of component files:
+
+```typescript
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  text: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+});
+```
+
+## Data Persistence Patterns
+
+### Firebase-Ready Structure
+
+All data must be Firebase-compatible:
+
+```typescript
+// Good: Flat structure with ISO 8601 dates
+interface Timeline {
+  id: string;
+  type: TimelineType;
+  title: string;
+  startDate: string;  // ISO 8601
+  endDate: string;    // ISO 8601
+  createdAt: string;  // ISO 8601
+  isActive: boolean;
+}
+
+// Bad: Nested objects or Date instances
+interface Timeline {
+  id: string;
+  dates: {  // Nested object
+    start: Date;  // Not serializable
+    end: Date;
+  };
+}
+```
+
+### Error Handling
+
+All async operations must handle errors:
+
+```typescript
+export async function saveTimeline(timeline: Timeline): Promise<void> {
+  try {
+    // Implementation
+    await AsyncStorage.setItem(key, JSON.stringify(timeline));
+  } catch (error) {
+    console.error('Error saving timeline:', error);
+    throw error;  // Re-throw after logging
+  }
+}
+```
+
+## Design Principles
+
+### Stoic Minimalism
+
+- Clean, focused UI with minimal distractions
+- No excessive animations or gamification
+- Emphasize awareness over motivation
+
+### Dark-Mode-First
+
+```typescript
+const DEFAULT_SETTINGS: AppSettings = {
+  themeMode: 'dark',  // Default to dark mode
+  gridColorTheme: 'classic',
+};
+```
+
+### Performance
+
+- Use `React.memo()` for expensive components
+- Memoize calculations with `useMemo()`
+- Debounce callbacks with `useCallback()`
+- Grid must ALWAYS fit container without scrolling
+
+## Example: Complete Component
+
+```typescript
+/**
+ * Timeline Card Component
+ * Displays timeline with progress bar and stats
+ */
+
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Timeline } from '@/types/timeline';
+import { calculateTimelineStats } from '@/services/timeline-calculator';
+
+export interface TimelineCardProps {
+  /**
+   * Timeline to display
+   */
+  timeline: Timeline;
+
+  /**
+   * Called when card is pressed
+   */
+  onPress?: (timeline: Timeline) => void;
+}
+
+export function TimelineCard({ timeline, onPress }: TimelineCardProps) {
+  // Memoize expensive calculation
+  const stats = useMemo(() => {
+    return calculateTimelineStats(timeline);
+  }, [timeline]);
+
+  return (
+    <Pressable
+      style={styles.container}
+      onPress={() => onPress?.(timeline)}
+    >
+      <Text style={styles.title}>{timeline.title}</Text>
+      <Text style={styles.progress}>
+        {stats.daysPassed} / {stats.totalDays} days
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#1C1C1E',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  progress: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+});
+```

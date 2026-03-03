@@ -1,0 +1,440 @@
+---
+title: Storage Service
+description: AsyncStorage wrapper functions for Stoic Calendar data persistence
+---
+
+The Storage Service provides a comprehensive AsyncStorage wrapper for all data persistence in Stoic Calendar. It handles timelines, active timeline state, and app settings with a Firebase-ready structure.
+
+## Timeline Operations
+
+### loadTimelines
+
+Load all timelines from storage.
+
+```typescript
+export async function loadTimelines(): Promise<Timeline[]>
+```
+
+<ResponseField name="return" type="Promise<Timeline[]>">
+  Array of timelines (empty array if none exist)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { loadTimelines } from '@/services/storage';
+
+const timelines = await loadTimelines();
+console.log(`Found ${timelines.length} timelines`);
+```
+
+---
+
+### saveTimeline
+
+Save a new timeline or update an existing one.
+
+```typescript
+export async function saveTimeline(timeline: Timeline): Promise<void>
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to save
+</ParamField>
+
+**Example:**
+
+```typescript
+import { saveTimeline } from '@/services/storage';
+import { createTimeline } from '@/services/timeline-calculator';
+import { TimelineType } from '@/types/timeline';
+
+const newTimeline = createTimeline(TimelineType.YEAR);
+await saveTimeline(newTimeline);
+```
+
+---
+
+### deleteTimeline
+
+Delete a timeline by ID. If the deleted timeline was active, it clears the active timeline.
+
+```typescript
+export async function deleteTimeline(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  Timeline ID to delete
+</ParamField>
+
+**Example:**
+
+```typescript
+import { deleteTimeline } from '@/services/storage';
+
+await deleteTimeline('timeline_1234567890_abc123');
+```
+
+---
+
+### getTimelineById
+
+Get a timeline by ID.
+
+```typescript
+export async function getTimelineById(id: string): Promise<Timeline | null>
+```
+
+<ParamField path="id" type="string" required>
+  Timeline ID
+</ParamField>
+
+<ResponseField name="return" type="Promise<Timeline | null>">
+  Timeline or null if not found
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineById } from '@/services/storage';
+
+const timeline = await getTimelineById('timeline_1234567890_abc123');
+if (timeline) {
+  console.log(`Timeline: ${timeline.title}`);
+}
+```
+
+---
+
+### clearAllTimelines
+
+Clear all timelines from storage. Use with caution as this operation cannot be undone.
+
+```typescript
+export async function clearAllTimelines(): Promise<void>
+```
+
+**Example:**
+
+```typescript
+import { clearAllTimelines } from '@/services/storage';
+
+// Only for testing/development
+await clearAllTimelines();
+```
+
+---
+
+## Active Timeline Operations
+
+### setActiveTimeline
+
+Set a timeline as active (displayed on Home screen). Also updates the `isActive` flag on all timelines and syncs to widgets.
+
+```typescript
+export async function setActiveTimeline(id: string): Promise<void>
+```
+
+<ParamField path="id" type="string" required>
+  Timeline ID to set as active
+</ParamField>
+
+**Example:**
+
+```typescript
+import { setActiveTimeline } from '@/services/storage';
+
+await setActiveTimeline('timeline_1234567890_abc123');
+```
+
+---
+
+### getActiveTimeline
+
+Get the currently active timeline.
+
+```typescript
+export async function getActiveTimeline(): Promise<Timeline | null>
+```
+
+<ResponseField name="return" type="Promise<Timeline | null>">
+  Active timeline or null if none is set
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getActiveTimeline } from '@/services/storage';
+
+const activeTimeline = await getActiveTimeline();
+if (activeTimeline) {
+  console.log(`Active: ${activeTimeline.title}`);
+}
+```
+
+---
+
+### getActiveTimelineId
+
+Get the active timeline ID.
+
+```typescript
+export async function getActiveTimelineId(): Promise<string | null>
+```
+
+<ResponseField name="return" type="Promise<string | null>">
+  Active timeline ID or null
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getActiveTimelineId } from '@/services/storage';
+
+const activeId = await getActiveTimelineId();
+console.log(`Active ID: ${activeId}`);
+```
+
+---
+
+### clearActiveTimeline
+
+Clear the active timeline. Updates the `isActive` flag on all timelines to false.
+
+```typescript
+export async function clearActiveTimeline(): Promise<void>
+```
+
+**Example:**
+
+```typescript
+import { clearActiveTimeline } from '@/services/storage';
+
+await clearActiveTimeline();
+```
+
+---
+
+## Settings Operations
+
+### loadSettings
+
+Load app settings.
+
+```typescript
+export async function loadSettings(): Promise<AppSettings>
+```
+
+<ResponseField name="return" type="Promise<AppSettings>">
+  App settings (defaults if none exist)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { loadSettings } from '@/services/storage';
+
+const settings = await loadSettings();
+console.log(`Theme: ${settings.themeMode}, Color: ${settings.gridColorTheme}`);
+```
+
+---
+
+### saveSettings
+
+Save app settings. Automatically syncs to widgets.
+
+```typescript
+export async function saveSettings(settings: AppSettings): Promise<void>
+```
+
+<ParamField path="settings" type="AppSettings" required>
+  Settings to save
+</ParamField>
+
+**Example:**
+
+```typescript
+import { saveSettings, loadSettings } from '@/services/storage';
+
+const settings = await loadSettings();
+settings.themeMode = 'light';
+await saveSettings(settings);
+```
+
+---
+
+### updateThemeMode
+
+Update theme mode setting.
+
+```typescript
+export async function updateThemeMode(mode: ThemeMode): Promise<void>
+```
+
+<ParamField path="mode" type="ThemeMode" required>
+  Theme mode to set ('light' | 'dark' | 'system')
+</ParamField>
+
+**Example:**
+
+```typescript
+import { updateThemeMode } from '@/services/storage';
+
+await updateThemeMode('dark');
+```
+
+---
+
+### getThemeMode
+
+Get current theme mode.
+
+```typescript
+export async function getThemeMode(): Promise<ThemeMode>
+```
+
+<ResponseField name="return" type="Promise<ThemeMode>">
+  Current theme mode
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getThemeMode } from '@/services/storage';
+
+const mode = await getThemeMode();
+console.log(`Current theme: ${mode}`);
+```
+
+---
+
+### updateGridColorTheme
+
+Update grid color theme setting.
+
+```typescript
+export async function updateGridColorTheme(theme: GridColorTheme): Promise<void>
+```
+
+<ParamField path="theme" type="GridColorTheme" required>
+  Grid color theme to set ('classic' | 'forest' | 'sunset' | 'monochrome')
+</ParamField>
+
+**Example:**
+
+```typescript
+import { updateGridColorTheme } from '@/services/storage';
+
+await updateGridColorTheme('forest');
+```
+
+---
+
+### getGridColorTheme
+
+Get current grid color theme.
+
+```typescript
+export async function getGridColorTheme(): Promise<GridColorTheme>
+```
+
+<ResponseField name="return" type="Promise<GridColorTheme>">
+  Current grid color theme
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getGridColorTheme } from '@/services/storage';
+
+const theme = await getGridColorTheme();
+console.log(`Grid color: ${theme}`);
+```
+
+---
+
+## Utility Operations
+
+### clearAllData
+
+Clear all app data (timelines, settings, active timeline). Use with caution as this operation cannot be undone. For testing/development purposes.
+
+```typescript
+export async function clearAllData(): Promise<void>
+```
+
+**Example:**
+
+```typescript
+import { clearAllData } from '@/services/storage';
+
+// Only for testing/development
+await clearAllData();
+```
+
+---
+
+### getAllKeys
+
+Get all storage keys used by the app. For debugging purposes.
+
+```typescript
+export async function getAllKeys(): Promise<string[]>
+```
+
+<ResponseField name="return" type="Promise<string[]>">
+  Array of storage keys prefixed with '@stoic_calendar:'
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getAllKeys } from '@/services/storage';
+
+const keys = await getAllKeys();
+console.log('Storage keys:', keys);
+```
+
+---
+
+### exportData
+
+Export all data as JSON string for debugging or backup purposes.
+
+```typescript
+export async function exportData(): Promise<string>
+```
+
+<ResponseField name="return" type="Promise<string>">
+  JSON string containing all timelines, settings, active timeline ID, and export timestamp
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { exportData } from '@/services/storage';
+
+const dataJson = await exportData();
+console.log('Exported data:', dataJson);
+// Save to file or share with user
+```
+
+---
+
+## Storage Keys
+
+The service uses the following internal storage keys:
+
+- `@stoic_calendar:timelines` - All timelines array
+- `@stoic_calendar:settings` - App settings object
+- `@stoic_calendar:active_timeline_id` - Active timeline ID
+
+## Default Settings
+
+```typescript
+const DEFAULT_SETTINGS: AppSettings = {
+  themeMode: 'dark',
+  gridColorTheme: 'classic',
+};
+```

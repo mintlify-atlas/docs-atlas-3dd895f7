@@ -1,0 +1,212 @@
+---
+title: 'Design Philosophy'
+description: 'The principles that guide every design decision in Stoic Calendar'
+---
+
+## Product Philosophy
+
+Stoic Calendar exists to make time **visible**, not actionable.
+
+<Info>
+The app shows reality without telling you what to do with it.
+</Info>
+
+Core tenets:
+
+- **No urgency**: Time is presented calmly
+- **No productivity pressure**: No goals or targets
+- **No gamification**: No streaks, badges, or rewards
+
+Time is presented neutrally, honestly, and without emotional manipulation. The UI never tells the user what to do — it only shows what is.
+
+## Widgets First
+
+Stoic Calendar inverts the traditional app hierarchy:
+
+<Note>
+**Widgets are the product. The app is a configuration tool.**
+</Note>
+
+This means:
+
+- Widgets define the visual language
+- The app mirrors widget behavior
+- Most user interaction happens at the widget level
+- The app exists primarily for setup and customization
+
+## Core Design Principles
+
+### 1. Quiet UI
+
+The interface embraces silence and space:
+
+- No visual noise
+- No decorative elements  
+- Empty space is intentional
+- The grid is the focus
+
+<Tip>
+What you don't see is as important as what you do see. Restraint is a design choice.
+</Tip>
+
+### 2. Single Focus
+
+Each screen and widget has one primary purpose:
+
+- One widget shows one timeline
+- One screen has one clear function
+- No competing elements
+- No split attention
+
+### 3. Truthful Visualization
+
+Visualization must reflect reality exactly:
+
+- 1 dot = 1 day, always
+- No grouping of time periods
+- No averages or approximations
+- No abstraction layers
+
+<Warning>
+Any design that breaks the 1:1 relationship between dots and days is not allowed.
+</Warning>
+
+### 4. Non-Emotional Tone
+
+The app maintains emotional neutrality:
+
+- UI does not motivate
+- UI does not warn or alarm  
+- Visuals speak without commentary
+- Text exists only to label what is shown
+
+### 5. Widget-First Hierarchy
+
+Decisions follow this priority:
+
+1. Does it work in a widget?
+2. Does it maintain grid clarity?
+3. Does it serve the app's configuration needs?
+
+## Visual Language
+
+### Color System
+
+Minimal color palette using Apple's semantic system:
+
+**Base Colors:**
+- `systemBackground`
+- `secondarySystemBackground`
+- `label`
+- `secondaryLabel`
+
+**Accent Color:**
+- Single cool blue/indigo tone
+- Used only for filled dots and selected states
+
+**Rules:**
+- No gradients
+- No shadows
+- No opacity tricks
+- Automatic light/dark adaptation
+
+<Info>
+The app defaults to dark mode (`themeMode: 'dark'`) as part of the dark-mode-first approach.
+</Info>
+
+### Typography
+
+**Base Font:**
+- SF Pro (default iOS system font)
+
+**Accent Font:**
+- Serif font used exclusively for:
+  - Timeline titles
+  - Year labels
+
+**Rules:**
+- No font mixing beyond this system
+- No decorative weights
+- Typography must never compete with the grid
+
+### Motion
+
+Animation is minimal and purposeful:
+
+**Allowed:**
+- Subtle fill animation on initial render
+- Linear or ease-in-out timing curves
+
+**Forbidden:**
+- Bounce effects
+- Spring animations
+- Attention-grabbing transitions
+
+<Note>
+Widgets may be fully static. Animation is optional, not required.
+</Note>
+
+## Content Rules
+
+Text in the app follows strict guidelines:
+
+- No motivational quotes
+- No countdown language ("Only X days left!")
+- No alerts about time passing
+- No calls to action
+
+Text exists only to label what is being shown. The grid does the communicating.
+
+## What Stoic Calendar Is NOT
+
+These guardrails prevent feature creep:
+
+- Not a habit tracker
+- Not a planner
+- Not a productivity tool
+- Not a reminder app
+- Not a calendar replacement
+
+<Warning>
+Features that turn Stoic Calendar into any of the above should be rejected, regardless of user demand.
+</Warning>
+
+## Interaction Principles
+
+Interactions are minimal and predictable:
+
+- No gestures inside widgets
+- No long-press logic beyond system defaults
+- App interactions are straightforward
+- No hidden features or easter eggs
+
+## The Decision Filter
+
+When facing an unclear design or feature decision, ask:
+
+<Info>
+"Does this make time clearer without making it louder?"
+</Info>
+
+If the answer is no — it does not belong in Stoic Calendar.
+
+## Technical Implementation
+
+These principles are enforced at the code level:
+
+- Grid rendering follows strict rules (see `utils/grid-layout.ts`)
+- Color system uses semantic tokens only
+- Animation timing uses approved curves
+- Text content is minimal and functional
+
+<Tip>
+The `north_star_stoic_calendar.md` document in the source code is the ultimate authority on design decisions. All implementations must align with it.
+</Tip>
+
+## Why These Principles Matter
+
+These constraints aren't arbitrary — they serve the core purpose:
+
+**Making time visible, not actionable.**
+
+Every rule exists to preserve clarity, reduce noise, and present reality without judgment. The principles ensure Stoic Calendar remains a tool for awareness, not productivity.

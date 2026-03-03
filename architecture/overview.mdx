@@ -1,0 +1,179 @@
+---
+title: "Architecture Overview"
+description: "High-level architecture overview of Stoic Calendar's React Native application"
+---
+
+Stoic Calendar is built with a clean, layered architecture that separates concerns and maintains a Firebase-ready data structure for future cloud sync capabilities.
+
+## Current Status
+
+**MVP (Minimum Viable Product)** - The app currently uses local-only AsyncStorage persistence with data structures designed to be Firebase-ready for future cloud synchronization.
+
+## Core Architecture Layers
+
+### 1. Routing Layer
+
+The app uses **Expo Router 6.0** with file-based routing:
+
+- `app/_layout.tsx` - Root layout with theme provider
+- `app/home.tsx` - Home screen (displays active timeline)
+- `app/settings.tsx` - Settings screen
+- `app/paywall.tsx` - Subscription paywall
+- `app/customer-center.tsx` - RevenueCat customer center
+
+Expo Router provides automatic deep linking, type-safe navigation, and a native-feeling navigation experience across iOS and Android.
+
+### 2. Storage Layer
+
+Centralized data persistence through `services/storage.ts`:
+
+```typescript
+import { loadTimelines, saveTimeline, getActiveTimeline } from '@/services/storage';
+
+// Load all timelines
+const timelines = await loadTimelines();
+
+// Save a timeline
+await saveTimeline(timeline);
+
+// Get the currently active timeline
+const active = await getActiveTimeline();
+```
+
+**Key characteristics:**
+- AsyncStorage wrapper for all data operations
+- Firebase-ready structure (ISO 8601 dates, flat data model)
+- No nested objects that can't serialize
+- Centralized storage keys and operations
+
+See: `services/storage.ts`
+
+### 3. Business Logic Layer
+
+Pure functions for timeline calculations in `services/timeline-calculator.ts`:
+
+- Timeline creation from types (YEAR, MONTH, WEEK, CUSTOM)
+- Progress calculations (days passed, remaining, percentage)
+- Timeline validation and updates
+- Week timeline auto-update logic
+
+**Key functions:**
+
+```typescript
+import { createTimeline, calculateTimelineStats } from '@/services/timeline-calculator';
+
+// Create a new year timeline
+const yearTimeline = createTimeline(TimelineType.YEAR, 2026);
+
+// Calculate progress
+const stats = calculateTimelineStats(timeline);
+// Returns: { daysPassed, daysRemaining, totalDays, progressPercentage }
+```
+
+See: `services/timeline-calculator.ts`
+
+### 4. UI Components Layer
+
+Reusable React Native components in `components/`:
+
+- **stoic-grid.tsx** - Core grid visualization (displays timeline as grid of squares)
+- **timeline-card.tsx** - Timeline list item with progress display
+- **timeline-form-drawer.tsx** - Drawer for creating/editing timelines
+- **timeline-management-modal.tsx** - Modal for managing timelines
+- **settings-group.tsx** - Settings screen grouped sections
+- **date-display-overlay.tsx** - Date information overlay
+
+See: `components/`
+
+### 5. Type System
+
+Strict TypeScript types defined in `types/timeline.ts`:
+
+```typescript
+interface Timeline {
+  id: string;              // Unique identifier
+  type: TimelineType;      // 'year' | 'month' | 'week' | 'custom'
+  title: string;           // Display name (e.g., "2026", "This Week")
+  startDate: string;       // ISO 8601 format
+  endDate: string;         // ISO 8601 format
+  createdAt: string;       // ISO 8601 format
+  isActive: boolean;       // Only one timeline is active
+  widgetPreferences?: WidgetPreferences; // Future iOS widget config
+}
+```
+
+See: `types/timeline.ts`
+
+### 6. Utilities Layer
+
+Helper functions for common operations:
+
+- **date-helpers.ts** - Date manipulation and calculations
+  - Year/month/week boundaries
+  - Progress calculations
+  - ISO 8601 formatting
+- **grid-layout.ts** - Grid rendering calculations
+  - Grid dimensions
+  - Square sizing
+  - Responsive layout
+
+See: `utils/`
+
+## Data Flow
+
+1. **User Action** → UI Component (e.g., create timeline button)
+2. **Component** → Business Logic (timeline-calculator.ts)
+3. **Business Logic** → Storage Layer (storage.ts)
+4. **Storage Layer** → AsyncStorage
+5. **AsyncStorage** → Widget Sync (iOS widget gets updated data)
+
+## Path Aliases
+
+The project uses `@/` as an alias for the root directory:
+
+```typescript
+import { Timeline } from '@/types/timeline';
+import { loadTimelines } from '@/services/storage';
+import { StoicGrid } from '@/components/stoic-grid';
+```
+
+Configured in `tsconfig.json` and supported by Expo's Metro bundler.
+
+## Design Principles
+
+### Dark-Mode-First
+
+The app defaults to dark mode (`DEFAULT_SETTINGS.themeMode = 'dark'`) for a Stoic, focused experience.
+
+### Stoic Minimalism
+
+- Clean, focused UI with minimal distractions
+- Grid-based visualization makes time tangible
+- No gamification or push notifications
+- Emphasizes awareness over motivation
+
+### Firebase-Ready Structure
+
+- All data uses ISO 8601 date strings
+- Flat data structure (no nested objects that can't serialize)
+- Ready for Firestore migration without data model changes
+- See `services/firebase-service.ts` for future implementation structure
+
+## Future Integrations
+
+The architecture is prepared for future features:
+
+- **Firebase** - Cloud sync and authentication (placeholder in `services/firebase-service.ts`)
+- **RevenueCat** - Subscription management (implemented in `services/revenue-cat-service.ts`)
+- **iOS Widgets** - WidgetKit integration (data service in `services/widget-data-service.ts`)
+
+## Related Pages
+
+<CardGroup cols={2}>
+  <Card title="Tech Stack" icon="layer-group" href="/architecture/tech-stack">
+    Detailed technology stack and dependencies
+  </Card>
+  <Card title="File Structure" icon="folder-tree" href="/architecture/file-structure">
+    Project directory structure and organization
+  </Card>
+</CardGroup>

@@ -1,0 +1,430 @@
+---
+title: Git Workflow & PR Process
+description: Development workflow, branching strategy, and pull request guidelines
+---
+
+## Development Workflow
+
+### Branch Strategy
+
+Stoic Calendar uses a simplified Git workflow:
+
+```bash
+main              # Production-ready code
+  ├── feature/*   # New features
+  ├── fix/*       # Bug fixes
+  └── docs/*      # Documentation updates
+```
+
+### Creating a Branch
+
+```bash
+# Create and switch to a new feature branch
+git checkout -b feature/timeline-export
+
+# Create a bug fix branch
+git checkout -b fix/week-timeline-update
+
+# Create a documentation branch
+git checkout -b docs/architecture-guide
+```
+
+### Branch Naming
+
+**Format:** `type/short-description`
+
+**Types:**
+- `feature/` - New features or enhancements
+- `fix/` - Bug fixes
+- `refactor/` - Code refactoring (no feature changes)
+- `docs/` - Documentation only
+- `test/` - Test additions or updates
+- `chore/` - Tooling, dependencies, config
+
+**Examples:**
+```
+feature/cloud-sync
+fix/grid-layout-overflow
+refactor/storage-service
+docs/api-reference
+test/timeline-calculator
+chore/update-dependencies
+```
+
+## Commit Guidelines
+
+### Commit Message Format
+
+```
+type: Brief description in present tense
+
+Optional longer description explaining WHY (not what).
+Focus on motivation and context.
+```
+
+### Commit Types
+
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring (no behavior change)
+- `docs:` - Documentation changes
+- `test:` - Test additions/updates
+- `chore:` - Maintenance tasks
+- `style:` - Formatting, whitespace (no code change)
+
+### Good Commit Messages
+
+```bash
+# Good - explains WHY
+git commit -m "feat: add cloud sync toggle to settings
+
+Users need ability to disable sync when on metered connections"
+
+# Good - concise and clear
+git commit -m "fix: prevent grid overflow on small screens"
+
+# Good - provides context
+git commit -m "refactor: extract date calculations to utils
+
+Reduces duplication and improves testability"
+```
+
+### Bad Commit Messages
+
+```bash
+# Bad - too vague
+git commit -m "fix stuff"
+
+# Bad - describes WHAT instead of WHY
+git commit -m "add new function calculateProgress()"
+
+# Bad - multiple unrelated changes
+git commit -m "fix bug, update docs, refactor service"
+```
+
+### Commit Frequency
+
+- Commit early and often
+- Each commit should be a logical unit of work
+- Can be squashed during PR merge if needed
+
+```bash
+# Good: Incremental commits during development
+git commit -m "feat: add firebase service structure"
+git commit -m "feat: implement timeline sync logic"
+git commit -m "feat: add error handling to sync"
+git commit -m "test: add unit tests for firebase sync"
+```
+
+## Pull Request Process
+
+### Before Creating a PR
+
+1. **Run the linter:**
+   ```bash
+   npm run lint
+   ```
+
+2. **Test on both platforms:**
+   ```bash
+   npm run ios
+   npm run android
+   ```
+
+3. **Ensure code compiles:**
+   ```bash
+   npx expo start --no-dev --minify
+   ```
+
+4. **Update your branch:**
+   ```bash
+   git checkout main
+   git pull
+   git checkout feature/your-branch
+   git rebase main
+   ```
+
+### Creating a Pull Request
+
+```bash
+# Push your branch
+git push -u origin feature/timeline-export
+
+# Create PR via GitHub CLI (recommended)
+gh pr create --title "Add timeline export feature" --body "$(cat <<'EOF'
+## Summary
+- Adds export button to timeline screen
+- Exports timeline data as JSON
+- Includes share sheet for iOS/Android
+
+## Testing
+Tested on:
+- iOS Simulator (iPhone 15 Pro)
+- Android Emulator (Pixel 7)
+
+## Screenshots
+[Add screenshots if UI changes]
+EOF
+)"
+```
+
+### PR Title Format
+
+Use the same format as commit messages:
+
+```
+type: Brief description
+```
+
+**Examples:**
+```
+feat: Add cloud sync with Firebase
+fix: Resolve week timeline auto-update issue
+refactor: Simplify grid layout calculations
+docs: Add architecture documentation
+```
+
+### PR Description Template
+
+```markdown
+## Summary
+- Brief bullet points of changes
+- Focus on user-facing impact
+- Mention any breaking changes
+
+## Implementation Details
+- Technical approach taken
+- Key architectural decisions
+- New dependencies added
+
+## Testing
+Tested on:
+- iOS Simulator (version)
+- Android Emulator (version)
+- Physical device (if applicable)
+
+## Screenshots
+[Add screenshots for UI changes]
+
+## Checklist
+- [ ] Linter passes (`npm run lint`)
+- [ ] Tested on iOS
+- [ ] Tested on Android
+- [ ] No TypeScript errors
+- [ ] Updated documentation (if needed)
+```
+
+### PR Size Guidelines
+
+**Ideal PR size:**
+- 100-300 lines of code
+- Single logical feature or fix
+- Can be reviewed in 15-30 minutes
+
+**If PR is large:**
+- Break into multiple smaller PRs
+- Use task list in description
+- Add extra context in description
+
+```markdown
+## Large Feature Breakdown
+
+This PR is part of the cloud sync feature:
+- [x] #123 - Firebase service structure
+- [x] #124 - Authentication flow
+- [ ] #125 - Timeline sync (this PR)
+- [ ] #126 - Conflict resolution
+```
+
+## Code Review Guidelines
+
+### For Authors
+
+1. **Self-review first:**
+   - Read your own diff on GitHub
+   - Check for console.logs or debug code
+   - Verify all files are intentional
+
+2. **Respond to feedback:**
+   - Address all comments (resolve or discuss)
+   - Push new commits (don't force-push during review)
+   - Request re-review when ready
+
+3. **Keep PR updated:**
+   - Rebase on main if conflicts arise
+   - Update PR description if scope changes
+
+### For Reviewers
+
+1. **Check these aspects:**
+   - Code correctness and logic
+   - TypeScript type safety
+   - Error handling
+   - Performance implications
+   - Code style consistency
+
+2. **Review types:**
+   - **Comment:** Suggestion or question
+   - **Request Changes:** Must be addressed
+   - **Approve:** Ready to merge
+
+3. **Be constructive:**
+   ```
+   ✅ Good: "Consider extracting this logic into a helper function for reusability"
+   ❌ Bad: "This is messy"
+   
+   ✅ Good: "This could cause a race condition if called multiple times. Consider adding a lock."
+   ❌ Bad: "This won't work"
+   ```
+
+## Merging Strategy
+
+### Merge Methods
+
+**Squash and Merge (Preferred):**
+- Use for feature branches
+- Keeps main branch history clean
+- Combine all commits into one
+
+```bash
+gh pr merge --squash --delete-branch
+```
+
+**Regular Merge:**
+- Use for important multi-commit features
+- Preserves detailed commit history
+
+```bash
+gh pr merge --merge --delete-branch
+```
+
+**Rebase and Merge:**
+- Rarely used
+- Only for very clean commit history
+
+### After Merging
+
+1. **Delete the branch:**
+   ```bash
+   git branch -d feature/timeline-export
+   git push origin --delete feature/timeline-export
+   ```
+
+2. **Update your local main:**
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+3. **Create next branch from updated main:**
+   ```bash
+   git checkout -b feature/next-feature
+   ```
+
+## Hotfix Process
+
+For critical production bugs:
+
+```bash
+# Create hotfix branch from main
+git checkout main
+git pull
+git checkout -b fix/critical-crash
+
+# Make fix
+# ...
+
+# Fast-track PR
+gh pr create --title "fix: Resolve critical crash on startup" \
+  --body "Critical fix for crash affecting all users" \
+  --label "hotfix"
+
+# Merge immediately after review
+gh pr merge --squash
+```
+
+## Development Environment
+
+### Initial Setup
+
+```bash
+# Clone repository
+git clone https://github.com/your-org/stoic-calendar.git
+cd stoic-calendar
+
+# Install dependencies
+npm install
+
+# Start development server
+npx expo start
+```
+
+### Daily Workflow
+
+```bash
+# 1. Start the day: Update main
+git checkout main
+git pull
+
+# 2. Create feature branch
+git checkout -b feature/new-feature
+
+# 3. Develop with hot reload
+npx expo start
+
+# 4. Commit frequently
+git add .
+git commit -m "feat: add feature component"
+
+# 5. Push and create PR when ready
+git push -u origin feature/new-feature
+gh pr create
+```
+
+### Troubleshooting
+
+```bash
+# Clear cache if build issues
+npx expo start --clear
+
+# Reset to clean state
+rm -rf node_modules
+npm install
+npx expo start --clear
+
+# Check for TypeScript errors
+npx tsc --noEmit
+```
+
+## Release Process
+
+Releases are handled via GitHub tags:
+
+```bash
+# Create annotated tag
+git tag -a v1.2.0 -m "Release version 1.2.0
+
+- Feature: Cloud sync
+- Feature: Custom themes
+- Fix: Grid layout on tablets"
+
+# Push tag
+git push origin v1.2.0
+```
+
+### Semantic Versioning
+
+Follow semver: `MAJOR.MINOR.PATCH`
+
+- `MAJOR` - Breaking changes (e.g., 1.0.0 → 2.0.0)
+- `MINOR` - New features (e.g., 1.0.0 → 1.1.0)
+- `PATCH` - Bug fixes (e.g., 1.0.0 → 1.0.1)
+
+**Examples:**
+```
+v1.0.0 - Initial release
+v1.1.0 - Added cloud sync feature
+v1.1.1 - Fixed sync crash
+v1.2.0 - Added custom themes
+v2.0.0 - Redesigned data model (breaking)
+```

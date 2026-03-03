@@ -1,0 +1,207 @@
+---
+title: "Data Model"
+description: "Core data structures for Timeline and AppSettings"
+---
+
+## Overview
+
+Stoic Calendar uses a Firebase-ready data model with TypeScript interfaces that define the structure for timelines and application settings. All dates are stored in ISO 8601 format for consistency and cloud sync readiness.
+
+## Timeline Interface
+
+The `Timeline` interface is the core data model for all timeline types in the app.
+
+```typescript
+interface Timeline {
+  /**
+   * Unique identifier (UUID v4)
+   */
+  id: string;
+
+  /**
+   * Timeline type: year, month, week, or custom
+   */
+  type: TimelineType;
+
+  /**
+   * Display title
+   * Examples: "2026", "This Week", "Project X"
+   */
+  title: string;
+
+  /**
+   * Start date (ISO 8601 format)
+   * Examples: "2026-01-01T00:00:00.000Z"
+   */
+  startDate: string;
+
+  /**
+   * End date (ISO 8601 format)
+   * Examples: "2026-12-31T23:59:59.999Z"
+   */
+  endDate: string;
+
+  /**
+   * Creation timestamp (ISO 8601 format)
+   */
+  createdAt: string;
+
+  /**
+   * Whether this timeline is currently displayed on the Home screen
+   * Only one timeline should have isActive = true at a time
+   */
+  isActive: boolean;
+
+  /**
+   * Widget configuration (reserved for future iOS widget integration)
+   */
+  widgetPreferences?: WidgetPreferences;
+}
+```
+
+**Source:** `types/timeline.ts:39-83`
+
+### Timeline Types
+
+The `TimelineType` enum defines four categories of timelines:
+
+```typescript
+enum TimelineType {
+  YEAR = 'year',
+  MONTH = 'month',
+  WEEK = 'week',
+  CUSTOM = 'custom',
+}
+```
+
+**Source:** `types/timeline.ts:5-10`
+
+#### Type Behaviors
+
+- **YEAR**: Fixed year timeline (e.g., "2026")
+- **MONTH**: Fixed month timeline (e.g., "January 2026")
+- **WEEK**: Auto-updating current week (Monday-Sunday)
+- **CUSTOM**: User-defined date range with custom title
+
+### Widget Preferences
+
+Reserved for future iOS WidgetKit integration:
+
+```typescript
+interface WidgetPreferences {
+  size?: WidgetSize;
+  showOnLockScreen?: boolean;
+  lockScreenFamily?: LockScreenFamily;
+  // Future: custom quotes, visual styles for premium
+}
+
+type WidgetSize = 'small' | 'medium' | 'large';
+type LockScreenFamily = 'circular' | 'rectangular' | 'inline';
+```
+
+**Source:** `types/timeline.ts:14-32`
+
+## AppSettings Interface
+
+User preferences are stored in a flat structure for AsyncStorage and Firebase compatibility.
+
+```typescript
+interface AppSettings {
+  themeMode: ThemeMode;
+  gridColorTheme: GridColorTheme;
+  // Future: notification preferences, widget settings, etc.
+}
+
+type ThemeMode = 'system' | 'light' | 'dark';
+type GridColorTheme = 'classic' | 'forest' | 'sunset' | 'monochrome';
+```
+
+**Source:** `types/timeline.ts:88-104`
+
+### Default Settings
+
+The app defaults to dark mode and the classic blue color theme:
+
+```typescript
+const DEFAULT_SETTINGS: AppSettings = {
+  themeMode: 'dark', // Dark mode by default (dark-mode-first)
+  gridColorTheme: 'classic', // Classic Blue by default
+};
+```
+
+**Source:** `services/storage.ts:34-37`
+
+## Active Timeline Pattern
+
+Only ONE timeline can have `isActive: true` at a time. The active timeline is displayed on the Home screen.
+
+### Usage Example
+
+```typescript
+import { setActiveTimeline, getActiveTimeline } from '@/services/storage';
+import { createTimeline } from '@/services/timeline-calculator';
+import { TimelineType } from '@/types/timeline';
+
+// Create a new year timeline
+const newTimeline = createTimeline(TimelineType.YEAR, {
+  year: 2026,
+  isActive: false,
+});
+
+// Save and set as active
+await saveTimeline(newTimeline);
+await setActiveTimeline(newTimeline.id); // Automatically updates all timeline flags
+
+// Retrieve active timeline
+const activeTimeline = await getActiveTimeline();
+```
+
+## Firebase-Ready Structure
+
+All data structures are designed for seamless Firebase/Firestore migration:
+
+- **ISO 8601 dates**: All dates stored as strings in ISO 8601 format
+- **Flat structure**: No nested objects that can't serialize
+- **String IDs**: UUIDs stored as strings for cross-platform compatibility
+- **No functions**: Pure data objects with no methods
+
+### Example Timeline Document
+
+```json
+{
+  "id": "timeline_1709740800000_abc123xyz",
+  "type": "year",
+  "title": "2026",
+  "startDate": "2026-01-01T00:00:00.000Z",
+  "endDate": "2026-12-31T23:59:59.999Z",
+  "createdAt": "2026-03-03T12:00:00.000Z",
+  "isActive": true,
+  "widgetPreferences": {
+    "size": "medium",
+    "showOnLockScreen": true,
+    "lockScreenFamily": "rectangular"
+  }
+}
+```
+
+## Type Imports
+
+All types are exported from a central location:
+
+```typescript
+import {
+  Timeline,
+  TimelineType,
+  AppSettings,
+  ThemeMode,
+  GridColorTheme,
+  WidgetPreferences,
+  WidgetSize,
+  LockScreenFamily,
+} from '@/types/timeline';
+```
+
+## Related Documentation
+
+- [Storage Service](/architecture/storage) - AsyncStorage persistence layer
+- [Timeline Calculator](/architecture/timeline-calculator) - Business logic for timeline operations

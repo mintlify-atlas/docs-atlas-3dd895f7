@@ -1,0 +1,392 @@
+---
+title: 'Themes & Appearance'
+description: 'Customize Stoic Calendar with dark mode and grid color themes'
+icon: 'palette'
+---
+
+Stoic Calendar features a minimal, elegant design system inspired by iOS 26 Human Interface Guidelines. Customize your experience with theme modes and grid color palettes.
+
+---
+
+## Theme Mode
+
+Choose how Stoic Calendar adapts to your device's appearance.
+
+<CardGroup cols={3}>
+  <Card title="System" icon="mobile-screen">
+    **Recommended**
+    
+    Follows your iPhone's Light/Dark mode setting automatically
+  </Card>
+  <Card title="Light" icon="sun">
+    Always displays in light mode with white backgrounds
+  </Card>
+  <Card title="Dark" icon="moon">
+    Always displays in dark mode with pure black backgrounds
+  </Card>
+</CardGroup>
+
+### Changing Theme Mode
+
+<Steps>
+  <Step title="Open Settings">
+    Tap the Settings tab at the bottom of the app
+  </Step>
+  <Step title="Find Appearance">
+    Scroll to the Appearance section
+  </Step>
+  <Step title="Select Theme Mode">
+    Tap on your preferred mode: System, Light, or Dark
+  </Step>
+  <Step title="Instant Apply">
+    The app updates immediately—no restart required
+  </Step>
+</Steps>
+
+---
+
+## Dark Mode
+
+Stoic Calendar is **dark-mode-first**, designed with pure black backgrounds for OLED displays.
+
+### Dark Mode Design
+
+<CardGroup cols={2}>
+  <Card title="Pure Black Background" icon="square">
+    `#000000` background for OLED power savings and true blacks
+  </Card>
+  <Card title="High Contrast Text" icon="text">
+    White primary text (`#FFFFFF`) with subtle gray secondary text
+  </Card>
+  <Card title="Vibrant Accents" icon="wand-magic-sparkles">
+    iOS blue (`#007AFF`) stands out beautifully against dark backgrounds
+  </Card>
+  <Card title="Reduced Eye Strain" icon="eye">
+    Carefully calibrated grays prevent bright spots and glare
+  </Card>
+</CardGroup>
+
+### Color System
+
+#### Dark Mode Colors
+
+- **Background**: `#000000` (Pure black)
+- **Secondary Background**: `#1C1C1E` (Dark gray)
+- **Tertiary Background**: `#2C2C2E` (Slightly lighter gray)
+- **Primary Text**: `#FFFFFF` (White)
+- **Secondary Text**: `#8E8E93` (Medium gray)
+- **Accent**: `#007AFF` (iOS blue)
+
+#### Light Mode Colors
+
+- **Background**: `#FFFFFF` (Pure white)
+- **Secondary Background**: `#F2F2F7` (Light gray)
+- **Tertiary Background**: `#FFFFFF` (White)
+- **Primary Text**: `#000000` (Black)
+- **Secondary Text**: `#8E8E93` (Medium gray)
+- **Accent**: `#007AFF` (iOS blue)
+
+<Note>
+  Both light and dark modes use the same iOS system blue (`#007AFF`) for accents, ensuring consistency across your device.
+</Note>
+
+---
+
+## Grid Color Themes
+
+Grid color themes change the appearance of filled days in your timeline grid. All themes use neutral gray for empty (future) days to maintain high contrast.
+
+### Available Themes
+
+<Tabs>
+  <Tab title="Classic Blue">
+    **The default iOS look**
+    
+    - **Filled Days (Light)**: `#007AFF` (iOS Blue)
+    - **Filled Days (Dark)**: `#007AFF` (iOS Blue)
+    - **Empty Days**: Neutral gray
+    
+    Classic Blue uses the standard iOS system blue, providing a familiar and clean appearance that matches the iOS ecosystem.
+  </Tab>
+  
+  <Tab title="Forest Green">
+    **Natural and calming**
+    
+    - **Filled Days (Light)**: `#34C759` (System Green)
+    - **Filled Days (Dark)**: `#30D158` (Bright Green)
+    - **Empty Days**: Neutral gray
+    
+    Forest Green offers a nature-inspired palette perfect for habit tracking and wellness goals.
+  </Tab>
+  
+  <Tab title="Sunset Orange">
+    **Warm and energetic**
+    
+    - **Filled Days (Light)**: `#FF9500` (System Orange)
+    - **Filled Days (Dark)**: `#FF9F0A` (Bright Orange)
+    - **Empty Days**: Neutral gray
+    
+    Sunset Orange provides warmth and energy, ideal for creative projects and motivation.
+  </Tab>
+  
+  <Tab title="Monochrome">
+    **Pure simplicity**
+    
+    - **Filled Days (Light)**: `#000000` (Black)
+    - **Filled Days (Dark)**: `#FFFFFF` (White)
+    - **Empty Days**: Neutral gray
+    
+    Monochrome delivers the most minimal aesthetic, removing all color distraction for pure focus on time passage.
+  </Tab>
+</Tabs>
+
+### Changing Grid Color Theme
+
+<Steps>
+  <Step title="Open Settings">
+    Tap the Settings tab at the bottom of the app
+  </Step>
+  <Step title="Find Appearance">
+    Scroll to the Appearance section
+  </Step>
+  <Step title="Tap Grid Color Theme">
+    Open the grid color theme picker
+  </Step>
+  <Step title="Select Theme">
+    Choose from Classic Blue, Forest Green, Sunset Orange, or Monochrome
+  </Step>
+  <Step title="See Preview">
+    The grid updates immediately on all screens and widgets
+  </Step>
+</Steps>
+
+<Tip>
+  Grid color themes apply to both the main app and widgets. Change your theme to match your home screen wallpaper or your current mood.
+</Tip>
+
+---
+
+## Design Philosophy
+
+Stoic Calendar follows a **dark-mode-first** design philosophy inspired by Stoic principles of clarity and minimalism.
+
+### Design Principles
+
+<AccordionGroup>
+  <Accordion title="Make time clearer without making it louder">
+    Visual elements are intentionally subtle. The grid speaks for itself without flashy animations or bright colors.
+  </Accordion>
+  
+  <Accordion title="Dark mode as the default">
+    Pure black (`#000000`) backgrounds reduce eye strain and emphasize the content. OLED displays benefit from true black pixels.
+  </Accordion>
+  
+  <Accordion title="Minimal color palette">
+    Limited color choices prevent decision fatigue. Four carefully curated grid themes cover all aesthetic preferences.
+  </Accordion>
+  
+  <Accordion title="iOS-native appearance">
+    Uses Apple's system colors and follows Human Interface Guidelines for a familiar, comfortable experience.
+  </Accordion>
+  
+  <Accordion title="No gamification">
+    No badges, streaks, or confetti. The grid visualization alone provides awareness without external motivation.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Typography
+
+Stoic Calendar uses a refined typography system that balances clarity with elegance.
+
+### Font Families
+
+<CardGroup cols={2}>
+  <Card title="SF Pro" icon="font">
+    **Body Text**
+    
+    Apple's system font for UI elements, navigation, and settings
+  </Card>
+  <Card title="Cormorant Garamond" icon="signature">
+    **Timeline Titles**
+    
+    Elegant serif font for timeline titles on the Home screen
+  </Card>
+</CardGroup>
+
+### Font Sizes (iOS Dynamic Type)
+
+- **Large Title**: 34pt (rarely used)
+- **Title 1**: 28pt (section headers)
+- **Title 2**: 22pt (timeline titles)
+- **Title 3**: 20pt (card headers)
+- **Headline**: 17pt (emphasis text)
+- **Body**: 17pt (default text)
+- **Callout**: 16pt (secondary text)
+- **Footnote**: 13pt (metadata)
+- **Caption**: 11-12pt (supporting text)
+
+<Info>
+  Font sizes follow iOS Dynamic Type scale, ensuring accessibility and consistency with system settings.
+</Info>
+
+---
+
+## Spacing & Layout
+
+Consistent spacing creates visual rhythm and improves readability.
+
+### Spacing Scale
+
+```typescript
+Spacing = {
+  xs: 4px,   // Tight spacing
+  sm: 8px,   // Small gaps
+  md: 16px,  // Default spacing
+  lg: 24px,  // Section spacing
+  xl: 32px,  // Large spacing
+  xxl: 48px  // Extra large spacing
+}
+```
+
+### Border Radius
+
+- **Small**: 8px (buttons, small cards)
+- **Medium**: 12px (standard cards)
+- **Large**: 16px (modal sheets)
+- **Extra Large**: 20px (large surfaces)
+- **Full**: 9999px (circular elements)
+
+---
+
+## Grid Visualization
+
+The core of Stoic Calendar's visual identity is the day grid.
+
+### Grid Design
+
+<CardGroup cols={2}>
+  <Card title="Dynamic Layout" icon="grid">
+    Grid dimensions calculated based on total days and screen size
+  </Card>
+  <Card title="Square Proportions" icon="square">
+    Each day is represented by a perfectly square dot
+  </Card>
+  <Card title="Consistent Spacing" icon="arrows-left-right">
+    25% spacing ratio (horizontal and vertical) for visual clarity
+  </Card>
+  <Card title="Size Range" icon="ruler">
+    Dot sizes range from 6px to 14px depending on timeline length
+  </Card>
+</CardGroup>
+
+### Grid Colors by Theme
+
+| Theme | Filled (Light) | Filled (Dark) | Empty (Both) |
+|-------|----------------|---------------|---------------|
+| **Classic Blue** | `#007AFF` | `#007AFF` | `#D1D1D6` / `#333333` |
+| **Forest Green** | `#34C759` | `#30D158` | `#D1D1D6` / `#333333` |
+| **Sunset Orange** | `#FF9500` | `#FF9F0A` | `#D1D1D6` / `#333333` |
+| **Monochrome** | `#000000` | `#FFFFFF` | `#D1D1D6` / `#333333` |
+
+<Note>
+  Empty dots use the same gray color across all themes to maintain high contrast between passed and remaining days.
+</Note>
+
+---
+
+## Animations
+
+Animations in Stoic Calendar are subtle and non-distracting.
+
+### Animation Principles
+
+- **Fast**: 200ms for quick interactions (button taps)
+- **Normal**: 300ms for standard transitions (screen changes)
+- **Slow**: 500ms for deliberate actions (modal presentations)
+
+### Easing
+
+All animations use `ease-in-out` easing. No spring or bounce effects—keeping the experience calm and predictable.
+
+<Warning>
+  Stoic Calendar intentionally avoids flashy animations. The goal is awareness, not entertainment.
+</Warning>
+
+---
+
+## Haptic Feedback
+
+Light haptic feedback provides subtle tactile responses.
+
+- **Tab Press**: Light haptic when switching tabs
+- **Button Press**: Light haptic for button interactions
+- **Delete Action**: Medium haptic for destructive actions
+
+<Info>
+  Haptics are minimal and never used for motivation or gamification—only for confirming interactions.
+</Info>
+
+---
+
+## Accessibility
+
+<CardGroup cols={2}>
+  <Card title="High Contrast" icon="circle-half-stroke">
+    All text meets WCAG AA standards for contrast ratios
+  </Card>
+  <Card title="Dynamic Type" icon="text-height">
+    Supports iOS Dynamic Type for adjustable text sizes
+  </Card>
+  <Card title="VoiceOver Ready" icon="audio-description">
+    All interactive elements have descriptive labels
+  </Card>
+  <Card title="Reduced Motion" icon="ban">
+    Respects iOS Reduce Motion accessibility setting
+  </Card>
+</CardGroup>
+
+---
+
+## Technical Reference
+
+### Theme Constants
+
+All theme values are defined in `constants/theme.ts:16`:
+
+- Color system: `Colors.light` and `Colors.dark`
+- Grid palettes: `GridColorPalettes`
+- Typography: `Fonts`, `FontSizes`, `FontWeights`
+- Spacing: `Spacing`, `BorderRadius`
+- Animations: `Animations`, `Haptics`
+
+### Theme Context
+
+The app uses React Context to provide theme values throughout the component tree. Theme changes trigger immediate re-renders.
+
+### Widget Theme Sync
+
+Theme settings automatically sync to widgets via App Groups. See `services/widget-data-service.ts:229` for implementation details.
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use System theme mode">
+    Let your iPhone's appearance setting control the app. This ensures consistency across all apps and reduces decision fatigue.
+  </Accordion>
+  
+  <Accordion title="Match your wallpaper">
+    Choose a grid color theme that complements your home screen wallpaper for a cohesive aesthetic.
+  </Accordion>
+  
+  <Accordion title="Try Monochrome for focus">
+    When you need maximum focus, Monochrome removes all color distraction and highlights the pure grid structure.
+  </Accordion>
+  
+  <Accordion title="Forest Green for wellness goals">
+    The natural green palette works beautifully for health, fitness, and mindfulness timelines.
+  </Accordion>
+</AccordionGroup>

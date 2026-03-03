@@ -1,0 +1,332 @@
+---
+title: 'iOS Widgets'
+description: 'Add Stoic Calendar widgets to your home screen and lock screen'
+icon: 'grid-2-plus'
+---
+
+Stoic Calendar widgets bring your active timeline directly to your iPhone's home screen and lock screen. See your progress at a glance without opening the app.
+
+<Note>
+  Widgets require a **development build** of Stoic Calendar. They do not work in Expo Go.
+</Note>
+
+---
+
+## Home Screen Widgets
+
+Home screen widgets display your active timeline's grid visualization, showing days passed and remaining.
+
+### Available Sizes
+
+<CardGroup cols={3}>
+  <Card title="Small" icon="square">
+    **All Users**
+    
+    Compact grid view with progress percentage
+  </Card>
+  <Card title="Medium" icon="rectangle-wide">
+    **All Users**
+    
+    Larger grid with timeline title and stats
+  </Card>
+  <Card title="Large" icon="square-full">
+    **Pro Only**
+    
+    Full grid visualization with detailed progress
+  </Card>
+</CardGroup>
+
+<Warning>
+  Large widgets require a Pro subscription. Free users can use small and medium widgets.
+</Warning>
+
+### Adding a Home Screen Widget
+
+<Steps>
+  <Step title="Enter Edit Mode">
+    Long-press on your home screen until apps start jiggling
+  </Step>
+  <Step title="Add Widget">
+    Tap the "+" button in the top-left corner
+  </Step>
+  <Step title="Find Stoic Calendar">
+    Search for "Stoic Calendar" or scroll to find it in the widget list
+  </Step>
+  <Step title="Choose Size">
+    Select Small, Medium, or Large (Pro only)
+  </Step>
+  <Step title="Add to Home Screen">
+    Drag the widget to your desired location and tap "Done"
+  </Step>
+</Steps>
+
+---
+
+## Lock Screen Widgets
+
+iOS 16+ lock screen widgets provide quick glances at your timeline progress directly from your lock screen.
+
+### Available Families
+
+<CardGroup cols={3}>
+  <Card title="Circular" icon="circle">
+    Small circular widget showing progress percentage
+  </Card>
+  <Card title="Rectangular" icon="rectangle-horizontal">
+    Wider rectangular widget with timeline title
+  </Card>
+  <Card title="Inline" icon="minus">
+    Text-based inline widget above the clock
+  </Card>
+</CardGroup>
+
+### Adding a Lock Screen Widget
+
+<Steps>
+  <Step title="Customize Lock Screen">
+    Long-press on your lock screen and tap "Customize"
+  </Step>
+  <Step title="Select Lock Screen">
+    Choose the lock screen you want to edit
+  </Step>
+  <Step title="Add Widgets">
+    Tap on the widget area below the time
+  </Step>
+  <Step title="Find Stoic Calendar">
+    Scroll through the widget list and select "Stoic Calendar"
+  </Step>
+  <Step title="Choose Style">
+    Select from Circular, Rectangular, or Inline
+  </Step>
+  <Step title="Done">
+    Tap anywhere outside the widget area to finish
+  </Step>
+</Steps>
+
+---
+
+## Widget Data Sync
+
+Widgets display data from your active timeline and sync automatically with the main app.
+
+### What Widgets Display
+
+<AccordionGroup>
+  <Accordion title="Timeline Information">
+    - Timeline title (e.g., "2026", "This Week", "Summer Goals")
+    - Timeline type (Year, Month, Week, or Custom)
+    - Start and end dates
+  </Accordion>
+  
+  <Accordion title="Progress Statistics">
+    - Days passed
+    - Days remaining
+    - Total days
+    - Progress percentage (0-100%)
+  </Accordion>
+  
+  <Accordion title="Visual Grid">
+    - Grid squares representing each day
+    - Filled squares for passed days
+    - Empty squares for remaining days
+    - Color theme matching your app settings
+  </Accordion>
+</AccordionGroup>
+
+### Sync Behavior
+
+Widgets automatically sync when:
+
+<CardGroup cols={2}>
+  <Card title="App Launch" icon="power-off">
+    Every time you open Stoic Calendar
+  </Card>
+  <Card title="Timeline Switch" icon="arrows-rotate">
+    When you change your active timeline
+  </Card>
+  <Card title="Timeline Update" icon="pen-to-square">
+    When week/month timelines auto-update
+  </Card>
+  <Card title="Settings Change" icon="gear">
+    When you change theme or color settings
+  </Card>
+</CardGroup>
+
+<Info>
+  Widgets use iOS App Groups to share data between the main app and widget extensions. This ensures your widget always displays up-to-date information.
+</Info>
+
+---
+
+## Widget Theme Support
+
+Widgets automatically match your app's appearance settings.
+
+### Theme Modes
+
+- **System**: Widget follows iPhone's Light/Dark mode setting
+- **Light**: Widget always displays in light mode
+- **Dark**: Widget always displays in dark mode
+
+### Grid Color Themes
+
+Widgets respect your chosen grid color theme:
+
+<CardGroup cols={2}>
+  <Card title="Classic Blue" icon="droplet">
+    iOS blue (#007AFF) for filled days
+  </Card>
+  <Card title="Forest Green" icon="leaf">
+    Vibrant green (#34C759) for filled days
+  </Card>
+  <Card title="Sunset Orange" icon="sun">
+    Warm orange (#FF9500) for filled days
+  </Card>
+  <Card title="Monochrome" icon="circle-half-stroke">
+    Pure black/white for filled days
+  </Card>
+</CardGroup>
+
+Change your color theme in Settings → Appearance → Grid Color Theme.
+
+---
+
+## Widget Configuration
+
+### Timeline Selection
+
+By default, widgets display your **active timeline**. The active timeline is the one shown on your Home screen in the main app.
+
+<Steps>
+  <Step title="Open Stoic Calendar">
+    Launch the Stoic Calendar app
+  </Step>
+  <Step title="Go to Timelines">
+    Tap the Timelines tab at the bottom
+  </Step>
+  <Step title="Select Timeline">
+    Tap any timeline to make it active
+  </Step>
+  <Step title="Widget Updates">
+    Your widgets will automatically update to show the new active timeline
+  </Step>
+</Steps>
+
+<Tip>
+  You can create multiple timelines and switch between them anytime. Your widgets will always reflect your currently active timeline.
+</Tip>
+
+---
+
+## Pro Features
+
+### Large Home Screen Widget
+
+Pro subscribers unlock the large home screen widget, which provides:
+
+- **Full Grid Visualization**: See your entire timeline grid without opening the app
+- **Detailed Stats**: Days passed, days remaining, and progress percentage
+- **Beautiful Layout**: Optimized for the larger widget canvas
+
+<Card title="Upgrade to Pro" icon="crown">
+  Unlock large widgets and unlimited timelines with a Pro subscription. Tap Settings → Upgrade to Pro in the app.
+</Card>
+
+### Future Pro Features
+
+Upcoming widget enhancements for Pro users:
+
+- **Custom Accent Colors**: Choose any color for your widget grid
+- **Widget-Specific Timelines**: Display different timelines in different widgets
+- **Custom Quotes**: Add inspirational quotes to your widgets
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget shows 'No Timeline'">
+    **Solution**: Open the app and create at least one timeline, then make it active by tapping on it in the Timelines screen.
+  </Accordion>
+  
+  <Accordion title="Widget not updating">
+    **Solutions**:
+    1. Open the Stoic Calendar app to trigger a sync
+    2. Remove and re-add the widget
+    3. Restart your iPhone
+    4. Ensure you're using a development build (not Expo Go)
+  </Accordion>
+  
+  <Accordion title="Widget shows wrong timeline">
+    **Solution**: Open the app, go to Timelines, and tap the timeline you want to display. Only the active timeline appears in widgets.
+  </Accordion>
+  
+  <Accordion title="Widget colors don't match app">
+    **Solution**: Sync may be delayed. Open the app to force a sync. If the issue persists, try changing your color theme in Settings and changing it back.
+  </Accordion>
+  
+  <Accordion title="Can't add large widget">
+    **Solution**: Large widgets require a Pro subscription. Upgrade in Settings → Upgrade to Pro.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Technical Implementation
+
+### App Groups
+
+Widgets use iOS App Groups for data sharing:
+
+```
+group.com.stoiccalendar.shared
+```
+
+The main app writes widget data to the shared container, and widget extensions read from it.
+
+### Data Format
+
+Widget data is stored as JSON in the App Groups container:
+
+```typescript
+interface WidgetTimelineData {
+  id: string;
+  type: string; // 'year' | 'month' | 'week' | 'custom'
+  title: string;
+  startDate: string; // ISO 8601
+  endDate: string; // ISO 8601
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number; // 0-100
+}
+```
+
+### Widget Reload
+
+The app calls `ExtensionStorage.reloadWidget()` to trigger immediate widget updates after:
+
+- Timeline changes
+- Theme changes
+- Pro status changes
+
+For implementation details, see `services/widget-data-service.ts:108`.
+
+---
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Keep Active Timeline Current" icon="clock">
+    Regularly switch your active timeline to what matters most right now
+  </Card>
+  <Card title="Match Your Home Screen" icon="palette">
+    Choose a grid color theme that complements your wallpaper
+  </Card>
+  <Card title="Use Lock Screen Wisely" icon="lock">
+    Lock screen widgets are great for quick glances—use them for your most important timeline
+  </Card>
+  <Card title="Minimize Clutter" icon="minimize">
+    One or two widgets are often more effective than many
+  </Card>
+</CardGroup>

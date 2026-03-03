@@ -1,0 +1,467 @@
+---
+title: "File Structure"
+description: "Project directory structure and organization for Stoic Calendar"
+---
+
+Stoic Calendar follows Expo Router's conventions with a clear separation of concerns across directories.
+
+## Root Structure
+
+```
+stoic-calendar/
+├── app/                    # Expo Router pages (file-based routing)
+├── assets/                 # Images, fonts, and static resources
+├── components/             # Reusable React components
+├── constants/              # App-wide constants
+├── hooks/                  # Custom React hooks
+├── modules/                # Native modules
+├── scripts/                # Build and utility scripts
+├── services/               # Business logic and data services
+├── targets/                # iOS widget targets
+├── types/                  # TypeScript type definitions
+├── utils/                  # Utility functions
+├── app.json                # Expo configuration
+├── package.json            # Dependencies
+└── tsconfig.json           # TypeScript configuration
+```
+
+## app/ - Routing & Screens
+
+File-based routing via Expo Router. Each file becomes a route.
+
+```
+app/
+├── _layout.tsx             # Root layout with theme provider
+├── index.tsx               # Entry point (redirects to /home)
+├── home.tsx                # Home screen - active timeline display
+├── settings.tsx            # Settings screen
+├── paywall.tsx             # RevenueCat subscription paywall
+├── customer-center.tsx     # RevenueCat customer center
+└── CLAUDE.md               # AI assistant instructions for this directory
+```
+
+**Key files:**
+
+### app/_layout.tsx
+
+Root layout that wraps all screens:
+- Theme provider setup
+- Font loading
+- Navigation container
+- Safe area context
+
+### app/home.tsx
+
+Main timeline display screen:
+- Renders active timeline's StoicGrid
+- Auto-updates week timelines
+- Timeline dropdown for switching
+- Day count and progress display
+
+See: `app/home.tsx`
+
+### app/settings.tsx
+
+User preferences:
+- Theme mode (system/light/dark)
+- Grid color theme selection
+- Subscription status
+- Links to customer center
+
+See: `app/settings.tsx`
+
+## components/ - UI Components
+
+Reusable React Native components.
+
+```
+components/
+├── stoic-grid.tsx                  # Core grid visualization
+├── timeline-card.tsx               # Timeline list item
+├── timeline-form-drawer.tsx        # Create/edit timeline drawer
+├── timeline-management-modal.tsx   # Timeline management UI
+├── timeline-dropdown.tsx           # Active timeline selector
+├── date-display-overlay.tsx        # Date information overlay
+├── settings-group.tsx              # Settings section wrapper
+├── haptic-tab.tsx                  # Tab with haptic feedback
+├── paywall/                        # Paywall components
+│   ├── widget-previews/
+│   │   └── ...                     # Widget preview images
+│   └── ...
+└── CLAUDE.md
+```
+
+**Key components:**
+
+### components/stoic-grid.tsx
+
+The heart of the app - renders the timeline as a grid of squares:
+
+```typescript
+interface StoicGridProps {
+  timeline: Timeline;
+  containerWidth: number;
+  onDayPress?: (dayIndex: number) => void;
+}
+
+export function StoicGrid({ timeline, containerWidth, onDayPress }: StoicGridProps) {
+  // Calculates grid layout
+  // Renders squares for each day
+  // Handles passed/remaining day coloring
+  // Animates with Reanimated
+}
+```
+
+See: `components/stoic-grid.tsx`
+
+### components/timeline-card.tsx
+
+Displays a timeline in list view:
+- Timeline title and dates
+- Progress bar
+- Days passed/remaining
+- Tap to activate
+
+See: `components/timeline-card.tsx`
+
+## services/ - Business Logic
+
+Core application logic and data operations.
+
+```
+services/
+├── storage.ts                # AsyncStorage wrapper
+├── timeline-calculator.ts    # Timeline creation and calculations
+├── widget-data-service.ts    # iOS widget data sync
+├── firebase-service.ts       # Firebase placeholders (future)
+├── revenue-cat-service.ts    # Subscription management
+└── CLAUDE.md
+```
+
+**Key services:**
+
+### services/storage.ts
+
+Centralized data persistence:
+
+```typescript
+// Load all timelines
+export async function loadTimelines(): Promise<Timeline[]>
+
+// Save a timeline
+export async function saveTimeline(timeline: Timeline): Promise<void>
+
+// Delete a timeline
+export async function deleteTimeline(id: string): Promise<void>
+
+// Get active timeline
+export async function getActiveTimeline(): Promise<Timeline | null>
+
+// Set active timeline (updates all timeline flags)
+export async function setActiveTimeline(id: string): Promise<void>
+
+// Settings operations
+export async function loadSettings(): Promise<AppSettings>
+export async function saveSettings(settings: AppSettings): Promise<void>
+```
+
+See: `services/storage.ts`
+
+### services/timeline-calculator.ts
+
+Timeline creation and progress calculations:
+
+```typescript
+// Create timeline from type
+export function createTimeline(
+  type: TimelineType,
+  value?: number | { start: Date; end: Date }
+): Timeline
+
+// Calculate progress
+export function calculateTimelineStats(timeline: Timeline): {
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number;
+}
+
+// Week timeline utilities
+export function weekTimelineNeedsUpdate(timeline: Timeline): boolean
+export function updateWeekTimeline(timeline: Timeline): Timeline
+```
+
+See: `services/timeline-calculator.ts`
+
+### services/widget-data-service.ts
+
+Syncs data to iOS widgets via App Groups:
+- Writes active timeline to shared container
+- Updates widget when timeline changes
+- Syncs theme settings
+
+See: `services/widget-data-service.ts`
+
+### services/revenue-cat-service.ts
+
+RevenueCat SDK wrapper:
+- Initialize SDK
+- Fetch offerings
+- Purchase products
+- Check subscription status
+- Restore purchases
+
+See: `services/revenue-cat-service.ts`
+
+## types/ - TypeScript Definitions
+
+All TypeScript interfaces and types.
+
+```
+types/
+└── timeline.ts             # Core data models
+```
+
+**Key types:**
+
+```typescript
+export enum TimelineType {
+  YEAR = 'year',
+  MONTH = 'month',
+  WEEK = 'week',
+  CUSTOM = 'custom',
+}
+
+export interface Timeline {
+  id: string;
+  type: TimelineType;
+  title: string;
+  startDate: string;        // ISO 8601
+  endDate: string;          // ISO 8601
+  createdAt: string;        // ISO 8601
+  isActive: boolean;
+  widgetPreferences?: WidgetPreferences;
+}
+
+export interface AppSettings {
+  themeMode: ThemeMode;
+  gridColorTheme: GridColorTheme;
+}
+
+export type ThemeMode = 'system' | 'light' | 'dark';
+export type GridColorTheme = 'classic' | 'forest' | 'sunset' | 'monochrome';
+```
+
+See: `types/timeline.ts`
+
+## utils/ - Helper Functions
+
+Pure utility functions.
+
+```
+utils/
+├── date-helpers.ts         # Date manipulation
+├── grid-layout.ts          # Grid calculations
+└── CLAUDE.md
+```
+
+### utils/date-helpers.ts
+
+Date utilities using ISO 8601:
+
+```typescript
+// Current boundaries
+export function getStartOfCurrentYear(): Date
+export function getEndOfCurrentYear(): Date
+export function getStartOfCurrentMonth(): Date
+export function getEndOfCurrentMonth(): Date
+export function getStartOfCurrentWeek(): Date  // Monday
+export function getEndOfCurrentWeek(): Date    // Sunday
+
+// Progress calculations
+export function getDaysPassed(startDate: string): number
+export function getDaysRemaining(endDate: string): number
+export function getTotalDays(startDate: string, endDate: string): number
+export function getProgressPercentage(startDate: string, endDate: string): number
+
+// Formatting
+export function toISOString(date: Date): string
+export function nowISO(): string
+```
+
+See: `utils/date-helpers.ts`
+
+### utils/grid-layout.ts
+
+Grid rendering calculations:
+
+```typescript
+export function calculateGridDimensions(
+  totalDays: number,
+  containerWidth: number
+): {
+  columns: number;
+  rows: number;
+  squareSize: number;
+  spacing: number;
+}
+```
+
+See: `utils/grid-layout.ts`
+
+## modules/ - Native Modules
+
+Custom native modules for platform-specific features.
+
+```
+modules/
+└── app-groups/             # iOS App Groups module
+    ├── ios/                # Swift implementation
+    ├── index.ts            # TypeScript interface
+    └── package.json
+```
+
+**app-groups module:**
+
+Enables data sharing between the main app and iOS widgets:
+
+```typescript
+import AppGroups from 'app-groups';
+
+// Write to shared container
+await AppGroups.setItem(
+  'group.com.stoiccalendar.shared',
+  'activeTimeline',
+  JSON.stringify(timeline)
+);
+
+// Read from shared container
+const data = await AppGroups.getItem(
+  'group.com.stoiccalendar.shared',
+  'activeTimeline'
+);
+```
+
+## targets/ - iOS Widgets
+
+WidgetKit implementation for iOS home screen widgets.
+
+```
+targets/
+└── StoicGridWidget/
+    ├── StoicGridWidget.swift       # Widget implementation
+    ├── Assets.xcassets/            # Widget assets
+    └── Info.plist
+```
+
+Swift-based widget that:
+- Reads data from App Groups
+- Renders mini grid visualization
+- Updates via Timeline API
+- Supports multiple widget sizes
+
+## assets/ - Static Resources
+
+```
+assets/
+├── images/                         # App icons, splash screens
+│   ├── icon.png                    # App icon
+│   ├── splash-icon.png             # Splash screen
+│   ├── favicon.png                 # Web favicon
+│   ├── android-icon-foreground.png
+│   ├── android-icon-background.png
+│   └── android-icon-monochrome.png
+└── new-paywall/                    # Paywall assets
+    └── cropped/
+```
+
+## constants/
+
+App-wide constants (theme colors, sizes, etc.).
+
+```
+constants/
+└── ...
+```
+
+## hooks/
+
+Custom React hooks for reusable logic.
+
+```
+hooks/
+└── ...
+```
+
+## scripts/
+
+Build and development scripts.
+
+```
+scripts/
+├── reset-project.js                # Reset to blank app
+└── patch-expo-modules-provider.js  # iOS build patch
+```
+
+## Configuration Files
+
+### app.json
+
+Expo configuration:
+- App name, version, bundle IDs
+- Platform-specific settings
+- Plugins and experiments
+- EAS project ID
+
+### package.json
+
+Dependencies and scripts:
+- React Native 0.81.5
+- Expo SDK 54
+- All dependencies with locked versions
+- Development scripts
+
+### tsconfig.json
+
+TypeScript configuration:
+- Strict mode enabled
+- Path aliases (`@/*`)
+- React Native preset
+
+## Path Aliases
+
+The project uses `@/` as root alias:
+
+```typescript
+import { Timeline } from '@/types/timeline';
+import { loadTimelines } from '@/services/storage';
+import { StoicGrid } from '@/components/stoic-grid';
+import { getDaysPassed } from '@/utils/date-helpers';
+```
+
+Configured in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+## CLAUDE.md Files
+
+Each major directory contains a `CLAUDE.md` file with AI assistant instructions specific to that directory's purpose and patterns.
+
+## Related Pages
+
+<CardGroup cols={2}>
+  <Card title="Architecture Overview" icon="sitemap" href="/architecture/overview">
+    High-level architecture and design patterns
+  </Card>
+  <Card title="Tech Stack" icon="layer-group" href="/architecture/tech-stack">
+    Technology stack and dependencies
+  </Card>
+</CardGroup>

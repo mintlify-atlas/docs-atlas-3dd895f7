@@ -1,0 +1,261 @@
+---
+title: Installation
+description: Install Memento Calendar on iOS and Android devices
+---
+
+# Installation Guide
+
+Memento Calendar is available for both iOS and Android devices. Follow the instructions below for your platform.
+
+## iOS Installation
+
+<Steps>
+  <Step title="Open the App Store">
+    On your iPhone or iPad, tap the **App Store** icon to launch Apple's app marketplace.
+  </Step>
+  
+  <Step title="Search for Memento Calendar">
+    Use the search function to find **Memento Calendar**.
+    
+    <Note>
+      The app bundle identifier is `com.ilyastorun.memento`.
+    </Note>
+  </Step>
+  
+  <Step title="Download and Install">
+    Tap the **Get** button to download and install the app. You may need to authenticate with Face ID, Touch ID, or your Apple ID password.
+  </Step>
+  
+  <Step title="Launch the App">
+    Once installation is complete, tap **Open** or find the Memento Calendar icon on your home screen.
+  </Step>
+</Steps>
+
+### iOS Requirements
+
+- **Platform**: iOS (iPhone)
+- **Orientation**: Portrait mode only
+- **Tablet Support**: Not optimized for iPad in this version
+- **Bundle ID**: `com.ilyastorun.memento`
+- **Current Version**: 1.0.2 (Build 9)
+
+<Note>
+  The app uses App Groups for data sharing (`group.com.stoiccalendar.shared`), which will support future iOS widget features.
+</Note>
+
+## Android Installation
+
+<Steps>
+  <Step title="Open Google Play Store">
+    On your Android device, tap the **Play Store** icon to launch the Google Play marketplace.
+  </Step>
+  
+  <Step title="Search for Memento Calendar">
+    Use the search bar to find **Memento Calendar** or search for the package name `com.stoiccalendar`.
+  </Step>
+  
+  <Step title="Install the App">
+    Tap the **Install** button to download and install the app on your device.
+  </Step>
+  
+  <Step title="Open the App">
+    After installation, tap **Open** or find the Memento Calendar icon in your app drawer.
+  </Step>
+</Steps>
+
+### Android Requirements
+
+- **Platform**: Android
+- **Package Name**: `com.stoiccalendar`
+- **Edge-to-Edge**: Enabled for immersive experience
+- **Adaptive Icon**: Includes monochrome, foreground, and background layers
+- **Current Version**: 1.0.2
+
+<Note>
+  The Android version uses edge-to-edge display for a more immersive visual experience.
+</Note>
+
+## First Launch Setup
+
+After installing the app on either platform:
+
+<Steps>
+  <Step title="Grant Permissions (if prompted)">
+    Memento Calendar stores all data locally on your device. No special permissions are required for core functionality.
+  </Step>
+  
+  <Step title="Welcome Screen">
+    On first launch, you'll see the home screen with an empty state. This is normal—you haven't created any timelines yet.
+  </Step>
+  
+  <Step title="Create Your First Timeline">
+    Navigate to the **Timelines** tab and tap the create button to set up your first timeline.
+    
+    See the [Quickstart Guide](/quickstart) for detailed instructions.
+  </Step>
+</Steps>
+
+## Platform-Specific Features
+
+### iOS
+
+<Card title="App Groups" icon="apple">
+  Memento Calendar uses App Groups on iOS (`group.com.stoiccalendar.shared`) to enable data sharing. This prepares the foundation for future iOS widget support.
+</Card>
+
+### Android
+
+<Card title="Adaptive Icons" icon="android">
+  The Android version includes adaptive icons that automatically adjust to your device's theme and icon shape preferences.
+</Card>
+
+## Development Installation (For Developers)
+
+If you're a developer who wants to run the app from source code:
+
+<Steps>
+  <Step title="Clone the Repository">
+    ```bash
+    git clone <repository-url>
+    cd stoic-calendar
+    ```
+  </Step>
+  
+  <Step title="Install Dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Start Development Server">
+    ```bash
+    npx expo start
+    ```
+  </Step>
+  
+  <Step title="Run on Your Platform">
+    Choose your target platform:
+    
+    ```bash
+    npm run ios      # Run on iOS simulator
+    npm run android  # Run on Android emulator
+    npm run web      # Run in web browser
+    ```
+  </Step>
+</Steps>
+
+### Development Requirements
+
+<CodeGroup>
+
+```json package.json dependencies
+{
+  "expo": "~54.0.30",
+  "react": "19.1.0",
+  "react-native": "0.81.5",
+  "expo-router": "~6.0.21",
+  "@react-native-async-storage/async-storage": "^2.2.0",
+  "react-native-reanimated": "~4.1.1"
+}
+```
+
+```json package.json devDependencies
+{
+  "@types/react": "~19.1.0",
+  "typescript": "~5.9.2",
+  "eslint": "^9.25.0",
+  "eslint-config-expo": "~10.0.0"
+}
+```
+
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="App won't open after installation">
+    Try these steps:
+    1. Restart your device
+    2. Ensure you have the latest OS version
+    3. Check for app updates in the store
+    4. Reinstall the app if the issue persists
+  </Accordion>
+  
+  <Accordion title="Data not persisting between sessions">
+    Memento Calendar uses AsyncStorage for local data persistence. If data isn't saving:
+    - Ensure you haven't cleared app data or cache
+    - Check that your device has sufficient storage space
+    - Verify you're not running the app in a restricted mode
+  </Accordion>
+  
+  <Accordion title="Grid not displaying correctly">
+    The grid layout is responsive and adapts to screen size:
+    - Try rotating your device back to portrait orientation (app is portrait-only)
+    - Close and reopen the app
+    - Ensure you have an active timeline set
+  </Accordion>
+  
+  <Accordion title="Week timeline not auto-updating">
+    Week timelines should automatically update to the current week:
+    - The check happens when you launch the app or navigate to home
+    - If it's not updating, try force-closing and reopening the app
+    - Create a new week timeline if the issue persists
+  </Accordion>
+</AccordionGroup>
+
+## Data Privacy & Storage
+
+<Info>
+  **Your data stays on your device.** Memento Calendar currently uses local-only AsyncStorage persistence. No data is transmitted to external servers.
+</Info>
+
+- All timelines are stored locally using AsyncStorage
+- Data uses ISO 8601 date format for consistency
+- The architecture is Firebase-ready for future cloud sync features
+- No analytics or tracking in the current MVP version
+
+## What's Included
+
+Every installation of Memento Calendar includes:
+
+<CardGroup cols={2}>
+  <Card title="Timeline Management" icon="calendar">
+    Create unlimited timelines for years, months, weeks, or custom date ranges.
+  </Card>
+  
+  <Card title="Visual Grid Display" icon="grid">
+    Beautiful day-by-day grid visualization with automatic progress tracking.
+  </Card>
+  
+  <Card title="Auto-Updating Weeks" icon="arrows-rotate">
+    Week timelines automatically update to the current week.
+  </Card>
+  
+  <Card title="Dark Mode Support" icon="moon">
+    Dark-mode-first design with system theme support.
+  </Card>
+</CardGroup>
+
+## Coming Soon
+
+<Note>
+  Future updates will include:
+  - Firebase cloud sync across devices
+  - iOS home screen widgets
+  - Premium features via RevenueCat subscriptions
+  - Additional customization options
+</Note>
+
+## Next Steps
+
+Now that you have Memento Calendar installed:
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Learn how to create your first timeline and start using the app.
+  </Card>
+  
+  <Card title="Introduction" icon="book" href="/introduction">
+    Understand the philosophy and core features of Memento Calendar.
+  </Card>
+</CardGroup>

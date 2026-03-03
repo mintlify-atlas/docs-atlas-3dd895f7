@@ -1,0 +1,415 @@
+---
+title: Roadmap & Future Features
+description: Planned features, integrations, and future development for Stoic Calendar
+---
+
+## Current Status
+
+**MVP (Minimum Viable Product)** - Local-only AsyncStorage persistence with Firebase-ready data structures.
+
+**Technology Stack:**
+- React Native 0.81.5 with Expo SDK 54
+- TypeScript (strict mode)
+- AsyncStorage for local persistence
+- React Native Reanimated 4.1
+
+## Planned Features
+
+### Cloud Sync with Firebase
+
+**Status:** Structure ready, not implemented  
+**Priority:** High  
+**File:** `services/firebase-service.ts`
+
+**Implementation Checklist:**
+
+```typescript
+// TODO: Install firebase package when backend is ready
+npm install firebase
+
+// TODO: Add firebaseConfig from Firebase Console
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+```
+
+**Features to Implement:**
+
+1. **Firestore Timeline Sync**
+   - Bi-directional sync between AsyncStorage and Firestore
+   - Real-time listeners for cross-device updates
+   - Conflict resolution for simultaneous edits
+   - Offline-first with sync on reconnection
+
+2. **Authentication**
+   - Google Sign-In integration
+   - Apple Sign-In integration (required for iOS)
+   - Anonymous authentication fallback
+   - Seamless transition from anonymous to authenticated
+
+3. **User Data Structure**
+   ```typescript
+   // Firestore structure
+   users/{userId}/timelines/{timelineId}
+   users/{userId}/settings
+   ```
+
+**Implementation Steps:**
+
+```typescript
+// 1. Initialize Firebase
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 2. Implement sync logic
+export async function syncTimelines(): Promise<void> {
+  // Get current user ID from auth
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error('Not authenticated');
+  
+  // Fetch timelines from Firestore
+  // Merge with local timelines
+  // Resolve conflicts
+  // Update both local and Firestore
+  // Set up real-time listeners
+}
+
+// 3. Implement authentication flows
+export async function signInWithGoogle(): Promise<void> {
+  // Google Sign-In implementation
+}
+
+export async function signInWithApple(): Promise<void> {
+  // Apple Sign-In implementation
+}
+```
+
+**Additional Packages Needed:**
+```bash
+npm install firebase
+npm install @react-native-google-signin/google-signin
+npm install expo-apple-authentication
+```
+
+---
+
+### Premium Features with RevenueCat
+
+**Status:** Active implementation  
+**Priority:** High  
+**File:** `services/revenue-cat-service.ts`
+
+**Current Implementation:**
+
+RevenueCat is fully integrated with the following features:
+
+1. **Subscription Management**
+   - Monthly subscription: `$2.99/month`
+   - Yearly subscription: `$19.99/year` (with 1-week free trial)
+   - Entitlement: "Memento Calendar Pro"
+
+2. **Pro Features**
+   ```typescript
+   export const PRO_FEATURES = {
+     UNLIMITED_TIMELINES: true,
+     UNLIMITED_CUSTOM_TIMELINES: true,
+     ALL_WIDGET_SIZES: true,
+     CUSTOM_ACCENT_COLORS: true,    // Future feature
+     CLOUD_SYNC: true,               // Future feature with Firebase
+     PRIORITY_SUPPORT: true,
+   };
+   ```
+
+3. **Free Tier Limits**
+   ```typescript
+   export const FREE_TIER_LIMITS = {
+     MAX_TIMELINES: 3,
+     MAX_CUSTOM_TIMELINES: 1,
+     WIDGET_SIZES: ['small', 'medium'], // Pro unlocks 'large'
+   };
+   ```
+
+**Available Functions:**
+
+```typescript
+// Initialize RevenueCat
+await initializeRevenueCat();
+
+// Check Pro status
+const hasProAccess = await isPro();
+
+// Get available subscription offerings
+const offering = await getOfferings();
+
+// Purchase a subscription package
+const { customerInfo } = await purchasePackage(package);
+
+// Restore previous purchases
+const customerInfo = await restorePurchases();
+
+// Cross-device sync (requires authentication)
+await loginUser(userId);
+await logoutUser();
+
+// Check feature availability
+const canUseFeature = await isFeatureAvailable('CLOUD_SYNC');
+```
+
+**Future Premium Features:**
+
+- Custom accent colors for grid themes
+- Priority email support
+- Early access to beta features
+- Advanced analytics and insights
+
+---
+
+### iOS Widgets (WidgetKit)
+
+**Status:** Data structure ready  
+**Priority:** Medium  
+**File:** `types/timeline.ts`
+
+**Reserved Data Structure:**
+
+```typescript
+interface Timeline {
+  id: string;
+  type: TimelineType;
+  title: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  isActive: boolean;
+  widgetPreferences?: WidgetPreferences; // Reserved for widgets
+}
+
+interface WidgetPreferences {
+  showPercentage: boolean;
+  showDaysRemaining: boolean;
+  colorTheme: GridColorTheme;
+}
+```
+
+**Planned Widget Sizes:**
+
+1. **Small Widget** (Free)
+   - Current day highlighted
+   - Timeline title
+   - Days remaining
+
+2. **Medium Widget** (Free)
+   - Mini grid visualization
+   - Progress percentage
+   - Timeline stats
+
+3. **Large Widget** (Pro)
+   - Full grid visualization
+   - Multiple timelines
+   - Interactive grid
+
+**Implementation Requirements:**
+
+```bash
+# Create widget extension target in Xcode
+# Share data via App Groups
+# Implement widget views in SwiftUI
+```
+
+**Widget Data Sharing:**
+
+```typescript
+// Already implemented in services/widget-data-service.ts
+export async function syncActiveTimelineToWidget(): Promise<void> {
+  // Writes timeline data to shared UserDefaults
+  // Widget reads from shared container
+}
+```
+
+---
+
+### Custom Accent Colors
+
+**Status:** Not started  
+**Priority:** Low (Pro feature)  
+
+**Planned Implementation:**
+
+```typescript
+interface AppSettings {
+  themeMode: ThemeMode;
+  gridColorTheme: GridColorTheme;
+  customAccentColor?: string; // Pro feature - hex color
+}
+
+// Allow users to set custom grid colors
+export async function updateCustomAccentColor(color: string): Promise<void> {
+  const hasProAccess = await isPro();
+  if (!hasProAccess) {
+    throw new Error('Custom colors require Pro subscription');
+  }
+  
+  const settings = await loadSettings();
+  settings.customAccentColor = color;
+  await saveSettings(settings);
+}
+```
+
+**UI Components:**
+- Color picker modal
+- Real-time grid preview
+- Preset color palette
+- Custom hex input
+
+---
+
+## Integration Timeline
+
+### Phase 1: Foundation (Complete)
+- ✅ Local-only MVP
+- ✅ AsyncStorage persistence
+- ✅ Firebase-ready data structure
+- ✅ Timeline grid visualization
+- ✅ RevenueCat integration
+
+### Phase 2: Cloud & Monetization (Q2 2026)
+- 🔄 Firebase authentication
+- 🔄 Cloud sync implementation
+- 🔄 Subscription paywall UI
+- 🔄 Cross-device data migration
+
+### Phase 3: Widgets & Premium (Q3 2026)
+- ⏳ iOS WidgetKit integration
+- ⏳ Widget configuration UI
+- ⏳ Custom accent colors (Pro)
+- ⏳ Advanced timeline features
+
+### Phase 4: Android Expansion (Q4 2026)
+- ⏳ Android widgets (Glance API)
+- ⏳ Android-specific optimizations
+- ⏳ Platform parity features
+
+---
+
+## Architecture Considerations
+
+### Data Migration Strategy
+
+**Local to Cloud Migration:**
+
+```typescript
+export async function migrateToCloud(): Promise<void> {
+  // 1. Check if user is authenticated
+  const user = getCurrentUser();
+  if (!user) throw new Error('User not authenticated');
+  
+  // 2. Load all local timelines
+  const localTimelines = await loadTimelines();
+  
+  // 3. Check for existing cloud data
+  const cloudTimelines = await fetchCloudTimelines(user.uid);
+  
+  // 4. Merge local and cloud (prefer cloud if conflict)
+  const merged = mergeTimelines(localTimelines, cloudTimelines);
+  
+  // 5. Upload merged data to Firestore
+  await uploadAllTimelines(merged);
+  
+  // 6. Enable cloud sync
+  await enableCloudSync();
+}
+```
+
+### Offline-First Design
+
+The app must work offline:
+
+```typescript
+// Always read from local cache first
+const timelines = await loadTimelines();
+
+// Sync with cloud in background
+if (isOnline()) {
+  syncTimelines().catch(error => {
+    console.error('Background sync failed:', error);
+    // Continue working with local data
+  });
+}
+```
+
+### Conflict Resolution
+
+For simultaneous edits:
+
+```typescript
+function resolveConflict(local: Timeline, cloud: Timeline): Timeline {
+  // Strategy: Last Write Wins (based on updatedAt timestamp)
+  const localTime = new Date(local.updatedAt || local.createdAt).getTime();
+  const cloudTime = new Date(cloud.updatedAt || cloud.createdAt).getTime();
+  
+  return cloudTime > localTime ? cloud : local;
+}
+```
+
+---
+
+## Performance Targets
+
+### App Performance
+- Cold start: < 2 seconds
+- Grid render: < 100ms (up to 1000 dots)
+- AsyncStorage operations: < 50ms
+- Cloud sync: < 3 seconds
+
+### Widget Performance
+- Widget render: < 500ms
+- Data refresh: Every 15 minutes
+- Background updates via push notifications
+
+---
+
+## Testing Strategy
+
+### Pre-Cloud Launch
+- Unit tests for timeline calculator
+- Integration tests for storage service
+- E2E tests for critical user flows
+- Performance testing on low-end devices
+
+### Post-Cloud Launch
+- Sync conflict resolution tests
+- Offline mode tests
+- Authentication flow tests
+- Cross-device consistency tests
+
+---
+
+## Contributing to Roadmap
+
+If you want to work on a future feature:
+
+1. Check the TODO comments in relevant service files
+2. Create a feature branch: `feature/cloud-sync`
+3. Follow implementation steps in code comments
+4. Submit PR with comprehensive testing
+
+See [Git Workflow](/development/workflow) for detailed process.
+
+---
+
+## Questions?
+
+For questions about roadmap or implementation:
+- Check inline TODO comments in service files
+- Review Firebase/RevenueCat documentation
+- Consult [Architecture Documentation](/architecture/overview)

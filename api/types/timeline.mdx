@@ -1,0 +1,204 @@
+---
+title: 'Timeline Types'
+description: 'Core data models for timeline visualization and widget configuration'
+---
+
+## Timeline
+
+Core data model for all timeline types. Firebase-ready structure, stored locally in AsyncStorage for MVP.
+
+```typescript
+interface Timeline {
+  id: string;
+  type: TimelineType;
+  title: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  isActive: boolean;
+  widgetPreferences?: WidgetPreferences;
+}
+```
+
+### Properties
+
+<ParamField path="id" type="string" required>
+  Unique identifier (UUID v4)
+</ParamField>
+
+<ParamField path="type" type="TimelineType" required>
+  Timeline type: year, month, week, or custom
+</ParamField>
+
+<ParamField path="title" type="string" required>
+  Display title
+  
+  Examples: "2026", "This Week", "Project X"
+</ParamField>
+
+<ParamField path="startDate" type="string" required>
+  Start date in ISO 8601 format
+  
+  Example: "2026-01-01T00:00:00.000Z"
+</ParamField>
+
+<ParamField path="endDate" type="string" required>
+  End date in ISO 8601 format
+  
+  Example: "2026-12-31T23:59:59.999Z"
+</ParamField>
+
+<ParamField path="createdAt" type="string" required>
+  Creation timestamp in ISO 8601 format
+</ParamField>
+
+<ParamField path="isActive" type="boolean" required>
+  Whether this timeline is currently displayed on the Home screen
+  
+  Only one timeline should have isActive = true at a time
+</ParamField>
+
+<ParamField path="widgetPreferences" type="WidgetPreferences">
+  Widget configuration (reserved for future iOS widget integration)
+</ParamField>
+
+### Usage Example
+
+```typescript
+import { Timeline, TimelineType } from '@/types/timeline';
+
+const yearTimeline: Timeline = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  type: TimelineType.YEAR,
+  title: '2026',
+  startDate: '2026-01-01T00:00:00.000Z',
+  endDate: '2026-12-31T23:59:59.999Z',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  isActive: true,
+  widgetPreferences: {
+    size: 'medium',
+    showOnLockScreen: true,
+    lockScreenFamily: 'rectangular'
+  }
+};
+```
+
+---
+
+## TimelineType
+
+Defines the four timeline categories available in Stoic Calendar.
+
+```typescript
+enum TimelineType {
+  YEAR = 'year',
+  MONTH = 'month',
+  WEEK = 'week',
+  CUSTOM = 'custom',
+}
+```
+
+### Values
+
+<ParamField path="YEAR" type="'year'">
+  Fixed year timeline (e.g., 2026)
+</ParamField>
+
+<ParamField path="MONTH" type="'month'">
+  Fixed month timeline (e.g., January 2026)
+</ParamField>
+
+<ParamField path="WEEK" type="'week'">
+  Auto-updating current week (Monday-Sunday)
+</ParamField>
+
+<ParamField path="CUSTOM" type="'custom'">
+  User-defined date range
+</ParamField>
+
+### Usage Example
+
+```typescript
+import { TimelineType } from '@/types/timeline';
+
+// Create a year timeline
+const timeline = {
+  type: TimelineType.YEAR,
+  // ... other properties
+};
+
+// Check timeline type
+if (timeline.type === TimelineType.WEEK) {
+  // Handle week timeline auto-update
+}
+```
+
+---
+
+## WidgetPreferences
+
+Configuration for iOS home screen and lock screen widgets.
+
+```typescript
+interface WidgetPreferences {
+  size?: WidgetSize;
+  showOnLockScreen?: boolean;
+  lockScreenFamily?: LockScreenFamily;
+}
+```
+
+### Properties
+
+<ParamField path="size" type="WidgetSize">
+  Widget size for home screen widgets
+  
+  Options: `'small'` | `'medium'` | `'large'`
+</ParamField>
+
+<ParamField path="showOnLockScreen" type="boolean">
+  Whether to display widget on lock screen
+</ParamField>
+
+<ParamField path="lockScreenFamily" type="LockScreenFamily">
+  Lock screen widget style
+  
+  Options: `'circular'` | `'rectangular'` | `'inline'`
+</ParamField>
+
+### Related Types
+
+**WidgetSize**
+```typescript
+type WidgetSize = 'small' | 'medium' | 'large';
+```
+
+Widget size options for future widget configuration (iOS WidgetKit integration).
+
+**LockScreenFamily**
+```typescript
+type LockScreenFamily = 'circular' | 'rectangular' | 'inline';
+```
+
+Lock screen widget family options.
+
+### Usage Example
+
+```typescript
+import { WidgetPreferences } from '@/types/timeline';
+
+const preferences: WidgetPreferences = {
+  size: 'medium',
+  showOnLockScreen: true,
+  lockScreenFamily: 'rectangular'
+};
+
+// Apply to timeline
+const timeline: Timeline = {
+  // ... other properties
+  widgetPreferences: preferences
+};
+```
+
+<Note>
+  Widget preferences are reserved for future iOS widget integration and are not currently active in the MVP.
+</Note>

@@ -1,0 +1,336 @@
+---
+title: "Technology Stack"
+description: "Complete technology stack for Stoic Calendar: React Native, Expo, TypeScript, and key dependencies"
+---
+
+Stoic Calendar is built with modern React Native technologies, prioritizing performance, type safety, and cross-platform compatibility.
+
+## Core Framework
+
+### React Native
+
+**Version:** 0.81.5
+
+The foundation of the app, providing native iOS and Android rendering from a single JavaScript codebase.
+
+**Key features used:**
+- Native animations via Reanimated
+- AsyncStorage for persistence
+- Platform-specific optimizations
+- New Architecture enabled (`newArchEnabled: true`)
+
+### Expo
+
+**SDK Version:** ~54.0.30
+
+Expo provides managed workflow, simplified native module access, and streamlined development.
+
+**Key Expo packages:**
+
+```json
+"expo": "~54.0.30",
+"expo-router": "~6.0.21",
+"expo-constants": "~18.0.12",
+"expo-font": "~14.0.10",
+"expo-haptics": "~15.0.8",
+"expo-image": "~3.0.11",
+"expo-splash-screen": "~31.0.13",
+"expo-status-bar": "~3.0.9",
+"expo-system-ui": "~6.0.9"
+```
+
+**Configuration:** See `app.json` for Expo config including:
+- Bundle identifiers
+- Splash screens
+- App icons
+- Platform-specific settings
+
+### TypeScript
+
+**Version:** ~5.9.2
+
+Strict TypeScript mode is enabled for maximum type safety.
+
+**Configuration:**
+```json
+{
+  "strict": true,
+  "paths": {
+    "@/*": ["./*"]
+  }
+}
+```
+
+All components, services, and utilities are fully typed with interfaces defined in `types/`.
+
+## Navigation
+
+### Expo Router
+
+**Version:** ~6.0.21
+
+File-based routing system built on React Navigation.
+
+**Features used:**
+- File-based routing in `app/` directory
+- Type-safe routes with `typedRoutes: true`
+- Deep linking support (scheme: `stoiccalendar://`)
+- Automatic navigation types
+
+**Navigation Dependencies:**
+```json
+"@react-navigation/native": "^7.1.8",
+"@react-navigation/bottom-tabs": "^7.4.0",
+"@react-navigation/elements": "^2.6.3"
+```
+
+## UI & Animations
+
+### React Native Reanimated
+
+**Version:** ~4.1.1
+
+High-performance animations running on the native thread.
+
+**Usage examples:**
+- Grid square animations in `components/stoic-grid.tsx`
+- Smooth drawer transitions
+- Haptic feedback timing
+
+```typescript
+import { useSharedValue, withTiming } from 'react-native-reanimated';
+```
+
+### React Native Gesture Handler
+
+**Version:** ~2.28.0
+
+Native gesture recognition for smooth interactions.
+
+### Expo Haptics
+
+**Version:** ~15.0.8
+
+Provides tactile feedback for user interactions:
+
+```typescript
+import * as Haptics from 'expo-haptics';
+
+await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+```
+
+### Icon Libraries
+
+**Phosphor React Native**
+- **Version:** ^3.0.2
+- Beautiful, consistent icon set
+- Used throughout the app for UI elements
+
+**Expo Vector Icons**
+- **Version:** ^15.0.3
+- Fallback icon library
+
+### Fonts
+
+**Cormorant Garamond**
+- **Version:** ^0.4.1
+- Elegant serif font for Stoic aesthetic
+- Loaded via `@expo-google-fonts/cormorant-garamond`
+
+## Data & Storage
+
+### AsyncStorage
+
+**Package:** `@react-native-async-storage/async-storage`
+**Version:** ^2.2.0
+
+Local key-value storage for:
+- Timeline data
+- User settings
+- Active timeline state
+
+Wrapped in `services/storage.ts` for centralized access.
+
+### Date/Time Picker
+
+**Package:** `@react-native-community/datetimepicker`
+**Version:** ^8.5.1
+
+Native date pickers for timeline creation:
+- iOS native picker
+- Android Material Design picker
+
+## Monetization
+
+### RevenueCat
+
+**Packages:**
+```json
+"react-native-purchases": "^9.6.13",
+"react-native-purchases-ui": "^9.6.13"
+```
+
+In-app subscription management:
+- Paywall UI in `app/paywall.tsx`
+- Service layer in `services/revenue-cat-service.ts`
+- Customer center integration
+
+**Features:**
+- Cross-platform subscription handling
+- Receipt validation
+- Subscription status tracking
+- Restore purchases
+
+## iOS Widgets
+
+### App Groups Module
+
+**Package:** `app-groups` (local module in `modules/app-groups`)
+
+Custom native module for sharing data between the main app and iOS widgets.
+
+**Usage:**
+```typescript
+import AppGroups from 'app-groups';
+
+await AppGroups.setItem('group.com.stoiccalendar.shared', 'activeTimeline', data);
+```
+
+### Widget Implementation
+
+Swift-based widget in `targets/StoicGridWidget/` using:
+- WidgetKit
+- SwiftUI
+- Timeline providers
+
+## Graphics & Media
+
+### Expo Image
+
+**Version:** ~3.0.11
+
+Performant image component with:
+- Automatic caching
+- Placeholder support
+- Priority loading
+
+### React Native SVG
+
+**Version:** 15.12.1
+
+SVG rendering for scalable graphics.
+
+### Expo Blur
+
+**Version:** ^15.0.8
+
+Native blur effects for iOS-style UI elements.
+
+## Build & Development
+
+### Bacons Apple Targets
+
+**Package:** `@bacons/apple-targets`
+**Version:** ^3.0.6
+
+Enables multi-target iOS builds for widgets and app extensions.
+
+### ESLint
+
+**Version:** ^9.25.0
+
+```json
+"eslint-config-expo": "~10.0.0"
+```
+
+Code quality enforcement:
+```bash
+npm run lint
+```
+
+## Platform-Specific
+
+### iOS
+
+- **Bundle ID:** `com.ilyastorun.memento`
+- **Build Number:** 9
+- **Minimum Version:** iOS 13+
+- **Tablets:** Not supported (`supportsTablet: false`)
+- **App Groups:** `group.com.stoiccalendar.shared`
+
+### Android
+
+- **Package:** `com.stoiccalendar`
+- **Edge-to-Edge:** Enabled
+- **Adaptive Icon:** Custom foreground, background, and monochrome
+
+### Web
+
+- **Output:** Static
+- **Support:** Basic web preview via Expo
+
+## Development Scripts
+
+```json
+{
+  "start": "expo start",
+  "android": "expo run:android",
+  "ios": "expo run:ios",
+  "web": "expo start --web",
+  "lint": "expo lint"
+}
+```
+
+## Experimental Features
+
+```json
+"experiments": {
+  "typedRoutes": true,
+  "reactCompiler": true
+}
+```
+
+- **Typed Routes:** Auto-generated type-safe navigation
+- **React Compiler:** Automatic memoization and optimization
+
+## Dependencies Summary
+
+### Core
+- **react:** 19.1.0
+- **react-native:** 0.81.5
+- **expo:** ~54.0.30
+- **typescript:** ~5.9.2
+
+### Navigation
+- **expo-router:** ~6.0.21
+- **@react-navigation/native:** ^7.1.8
+
+### UI/UX
+- **react-native-reanimated:** ~4.1.1
+- **react-native-gesture-handler:** ~2.28.0
+- **phosphor-react-native:** ^3.0.2
+
+### Storage
+- **@react-native-async-storage/async-storage:** ^2.2.0
+
+### Monetization
+- **react-native-purchases:** ^9.6.13
+- **react-native-purchases-ui:** ^9.6.13
+
+## Version Compatibility
+
+All versions are locked to ensure compatibility:
+- Expo SDK 54 compatibility matrix followed
+- React Native 0.81.5 tested and stable
+- iOS 13+ and Android 5.0+ (API 21+) supported
+
+## Related Pages
+
+<CardGroup cols={2}>
+  <Card title="Architecture Overview" icon="sitemap" href="/architecture/overview">
+    High-level architecture and design patterns
+  </Card>
+  <Card title="File Structure" icon="folder-tree" href="/architecture/file-structure">
+    Project directory organization
+  </Card>
+</CardGroup>

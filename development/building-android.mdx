@@ -1,0 +1,228 @@
+---
+title: Building for Android
+description: Build and run Stoic Calendar on Android emulator and physical devices
+---
+
+This guide covers building Stoic Calendar for Android devices and emulators.
+
+## Prerequisites
+
+- Android Studio installed
+- Android SDK and build tools
+- Node.js and npm
+- Java Development Kit (JDK) 17 or higher
+
+## Android Configuration
+
+The app is configured in `app.json` with the following Android settings:
+
+- **Package Name**: `com.stoiccalendar`
+- **Adaptive Icon**: Custom foreground, background, and monochrome images
+- **Edge-to-Edge**: Enabled (immersive display)
+- **Predictive Back Gesture**: Disabled
+- **New Architecture**: Enabled
+
+### Adaptive Icon Configuration
+
+```json
+{
+  "backgroundColor": "#E6F4FE",
+  "foregroundImage": "./assets/images/android-icon-foreground.png",
+  "backgroundImage": "./assets/images/android-icon-background.png",
+  "monochromeImage": "./assets/images/android-icon-monochrome.png"
+}
+```
+
+## Building for Android Emulator
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+
+  <Step title="Start Android emulator">
+    Launch an emulator from Android Studio or via command line:
+    ```bash
+    emulator -avd Pixel_5_API_34
+    ```
+    
+    List available AVDs:
+    ```bash
+    emulator -list-avds
+    ```
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    npx expo start
+    ```
+  </Step>
+
+  <Step title="Launch on emulator">
+    In a new terminal, run:
+    ```bash
+    npm run android
+    ```
+    
+    This executes `expo run:android` which builds and launches the app on the running emulator.
+  </Step>
+</Steps>
+
+## Building for Physical Device
+
+<Steps>
+  <Step title="Enable developer mode">
+    On your Android device:
+    1. Go to Settings > About phone
+    2. Tap "Build number" 7 times to enable Developer mode
+    3. Go to Settings > Developer options
+    4. Enable "USB debugging"
+  </Step>
+
+  <Step title="Connect your device">
+    Connect your Android device via USB and authorize the computer if prompted.
+    
+    Verify the device is connected:
+    ```bash
+    adb devices
+    ```
+  </Step>
+
+  <Step title="Run on device">
+    ```bash
+    npm run android
+    ```
+    
+    The app will automatically install and launch on your connected device.
+  </Step>
+</Steps>
+
+## EAS Build (Cloud Builds)
+
+For production or internal distribution builds, use EAS Build:
+
+### Development Build
+
+```bash
+eas build --profile development --platform android
+```
+
+This creates a development build with:
+- Development client enabled
+- Internal distribution
+- APK format for easy testing
+
+### Preview Build
+
+```bash
+eas build --profile preview --platform android
+```
+
+Creates an internal distribution build for testing before production.
+
+### Production Build
+
+```bash
+eas build --profile production --platform android
+```
+
+Creates a production AAB (Android App Bundle) ready for Google Play Store submission.
+
+## Local Production Builds
+
+To create a local production APK:
+
+<Steps>
+  <Step title="Generate Android project">
+    ```bash
+    npx expo prebuild --platform android
+    ```
+  </Step>
+
+  <Step title="Build release APK">
+    ```bash
+    cd android
+    ./gradlew assembleRelease
+    ```
+    
+    The APK will be located at:
+    `android/app/build/outputs/apk/release/app-release.apk`
+  </Step>
+
+  <Step title="Install on device">
+    ```bash
+    adb install app/build/outputs/apk/release/app-release.apk
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Gradle Build Failures
+
+If you encounter Gradle build errors:
+
+```bash
+cd android
+./gradlew clean
+cd ..
+npm run android
+```
+
+### ADB Connection Issues
+
+If your device isn't recognized:
+
+```bash
+# Restart ADB server
+adb kill-server
+adb start-server
+
+# Check devices
+adb devices
+```
+
+### Metro Bundler Issues
+
+If the app can't connect to the Metro bundler:
+
+1. Ensure your device and computer are on the same network
+2. Shake the device to open the developer menu
+3. Go to Settings > Change Bundle Location
+4. Enter your computer's IP address with port 8081
+
+Or use ADB reverse:
+
+```bash
+adb reverse tcp:8081 tcp:8081
+```
+
+### New Architecture Issues
+
+The app uses React Native's New Architecture (`newArchEnabled: true`). If you encounter compatibility issues:
+
+1. Verify all dependencies support the New Architecture
+2. Try cleaning and rebuilding:
+   ```bash
+   cd android
+   ./gradlew clean
+   cd ..
+   npx expo prebuild --clean --platform android
+   ```
+
+### Out of Memory Errors
+
+If Gradle runs out of memory, edit `android/gradle.properties`:
+
+```properties
+org.gradle.jvmargs=-Xmx4096m -XX:MaxPermSize=512m
+```
+
+### Edge-to-Edge Display Issues
+
+The app uses `edgeToEdgeEnabled: true`. If you see content behind system bars:
+
+- Ensure you're using `SafeAreaView` or `useSafeAreaInsets()` from `react-native-safe-area-context`
+- Check that status bar color is configured properly in your theme

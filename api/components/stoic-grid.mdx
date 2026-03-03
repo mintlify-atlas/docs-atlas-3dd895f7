@@ -1,0 +1,176 @@
+---
+title: "StoicGrid"
+description: "Core grid visualization component that displays timeline as dots"
+---
+
+# StoicGrid
+
+The core visualization component that renders timelines as a grid of dots. Each dot represents one day, with filled dots representing past days and empty dots representing future days.
+
+## Features
+
+- **Fixed dot count**: Never groups or abstracts days - 1 dot always equals 1 day
+- **Container-fitted**: Grid always fits its container without scrolling
+- **Responsive layout**: Automatically calculates optimal dot size and spacing
+- **Optional animation**: Subtle wave animation on mount
+- **Mini mode**: Smaller dot sizes for timeline cards
+- **Interactive dots**: Optional tap handling for individual dots
+
+## Import
+
+```tsx
+import { StoicGrid } from '@/components/stoic-grid';
+```
+
+## Props
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline object to visualize. Must include startDate, endDate, and other Timeline properties.
+</ParamField>
+
+<ParamField path="animated" type="boolean" default="false">
+  Show subtle wave animation on mount. Dots fade in and scale up sequentially from first to last, creating a wave effect across the grid.
+</ParamField>
+
+<ParamField path="mini" type="boolean" default="false">
+  Mini grid mode for timeline cards. Uses smaller maximum dot size to fit in compact spaces like list previews.
+</ParamField>
+
+<ParamField path="onDotPress" type="(dotIndex: number, position: { x: number; y: number }) => void">
+  Called when a dot is pressed. Receives:
+  - `dotIndex`: 0-based index of the pressed dot
+  - `position`: Tap position with `x` and `y` coordinates (absolute screen coordinates using pageX/pageY)
+  
+  When provided, dots become interactive with subtle tap feedback animation (scale down then back up).
+</ParamField>
+
+## Usage Examples
+
+### Basic Grid
+
+```tsx
+import { StoicGrid } from '@/components/stoic-grid';
+import { Timeline } from '@/types/timeline';
+
+function HomeScreen({ timeline }: { timeline: Timeline }) {
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <StoicGrid timeline={timeline} />
+    </View>
+  );
+}
+```
+
+### Animated Grid
+
+```tsx
+<StoicGrid 
+  timeline={timeline} 
+  animated={true}
+/>
+```
+
+### Mini Grid for Cards
+
+```tsx
+<View style={{ width: 60, height: 60 }}>
+  <StoicGrid 
+    timeline={timeline} 
+    mini={true}
+  />
+</View>
+```
+
+### Interactive Grid with Dot Press
+
+```tsx
+import { Alert } from 'react-native';
+
+function InteractiveGrid({ timeline }: { timeline: Timeline }) {
+  const handleDotPress = (dotIndex: number, position: { x: number; y: number }) => {
+    const date = new Date(timeline.startDate);
+    date.setDate(date.getDate() + dotIndex);
+    
+    Alert.alert(
+      'Day Selected',
+      `Day ${dotIndex + 1}: ${date.toLocaleDateString()}`
+    );
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <StoicGrid 
+        timeline={timeline} 
+        onDotPress={handleDotPress}
+      />
+    </View>
+  );
+}
+```
+
+## Behavior
+
+### Grid Layout Calculation
+
+The component automatically calculates optimal grid dimensions based on:
+- Total number of days in the timeline
+- Container width and height
+- Dot size constraints (different for regular vs mini mode)
+- Spacing between dots
+
+The grid is always centered within its container.
+
+### Dot States
+
+- **Filled dots**: Days that have passed (before or equal to current date)
+- **Empty dots**: Future days (after current date)
+
+The fill state is calculated using `getTimelineDaysPassed()` from the timeline calculator service.
+
+### Animation Behavior
+
+When `animated={true}`:
+- Each dot animates in with opacity (0 to 1) and scale (0.6 to 1.0)
+- Animation is staggered across dots creating a wave effect
+- Maximum total delay is 600ms regardless of dot count
+- Animation duration per dot is 300ms with cubic easing
+
+### Color Theming
+
+The component respects:
+- System color scheme (light/dark mode)
+- User-selected grid color theme from settings
+- Color palettes defined in `GridColorPalettes`
+
+### Interactive Feedback
+
+When `onDotPress` is provided:
+- Dots become pressable with touch targets
+- Tap triggers scale animation (scale to 0.85, then back to 1.0)
+- Position coordinates use absolute screen coordinates for tooltip positioning
+
+## Container Requirements
+
+The StoicGrid must be placed in a container with defined dimensions. It uses `flex: 1` and `onLayout` to measure available space.
+
+```tsx
+// Good: Container has defined size
+<View style={{ width: 300, height: 400 }}>
+  <StoicGrid timeline={timeline} />
+</View>
+
+// Good: Container uses flex
+<View style={{ flex: 1 }}>
+  <StoicGrid timeline={timeline} />
+</View>
+
+// Bad: No defined dimensions
+<View>
+  <StoicGrid timeline={timeline} />
+</View>
+```
+
+## Related Components
+
+- [TimelineCard](/api/components/timeline-card) - Uses StoicGrid in mini mode
+- Timeline Types - See Timeline interface definition

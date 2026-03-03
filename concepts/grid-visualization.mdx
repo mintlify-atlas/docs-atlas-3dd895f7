@@ -1,0 +1,113 @@
+---
+title: 'Grid Visualization'
+description: 'How the Stoic Grid makes time visible through dots'
+---
+
+## The Stoic Grid
+
+At the heart of Stoic Calendar is the grid visualization system. The grid transforms abstract time into something concrete and visible.
+
+<Info>
+**Core principle**: 1 dot = 1 day. This never changes.
+</Info>
+
+## How It Works
+
+Every timeline is rendered as a grid of squares (dots), where:
+
+- **Filled dots** represent days that have already passed
+- **Empty dots** represent days that are still in the future
+
+As each day passes, one more dot fills in. This creates a visual representation of time's passage that is truthful and non-negotiable.
+
+## Design Principles
+
+The grid follows strict visualization rules based on Stoic Calendar's design philosophy:
+
+### Truthful Visualization
+
+- One dot always equals one real day
+- No grouping of days
+- No averages or abstractions
+- No shortcuts
+
+<Note>
+A year timeline always shows 365 or 366 individual dots. A week timeline always shows exactly 7 dots.
+</Note>
+
+### Dynamic Layout
+
+The grid automatically adapts to fit its container:
+
+- **Dot size** scales based on total days and screen size
+- **Spacing** adjusts proportionally
+- **Grid dimensions** are calculated to optimize layout
+- All timelines fit within the viewport without scrolling
+
+<Tip>
+The grid layout utilities in `utils/grid-layout.ts` handle responsive calculations automatically, so grids look perfect on any screen size.
+</Tip>
+
+### Minimal Styling
+
+Grids follow the quiet UI principle:
+
+- No decorative elements
+- No rounded containers around the grid
+- No gradients or shadows
+- Clean, unadorned squares
+
+## What's NOT Allowed
+
+To maintain the integrity of the visualization:
+
+- **No scrollable grids in widgets**: The entire timeline must fit at once
+- **No grouped dots**: Every day remains individual
+- **No visual noise**: The grid speaks for itself
+
+<Warning>
+These restrictions are intentional. They preserve the clarity and honesty of the visualization.
+</Warning>
+
+## Grid States
+
+Each dot in the grid has only two states:
+
+1. **Filled**: Day has passed (uses accent color)
+2. **Empty**: Day is in the future (uses background color)
+
+There are no intermediate states, no partial fills, no special indicators. This binary simplicity is what makes the grid powerful.
+
+## Color System
+
+The grid uses Apple's semantic color system:
+
+- **Background colors**: `systemBackground`, `secondarySystemBackground`
+- **Labels**: `label`, `secondaryLabel`
+- **Accent**: Single cool blue/indigo tone for filled dots
+
+<Info>
+Colors automatically adapt to light and dark mode, ensuring the grid remains visible in any environment.
+</Info>
+
+## Animation
+
+Grids may include subtle fill animation when first rendered:
+
+- Linear or ease-in-out timing only
+- No bounce or spring effects
+- No attention-grabbing transitions
+
+<Note>
+Widgets may be fully static. Animation is optional and always subtle.
+</Note>
+
+## The Philosophy Behind the Grid
+
+The grid exists to make time **visible**, not actionable:
+
+- It doesn't tell you what to do
+- It doesn't motivate or warn
+- It doesn't pressure you to be productive
+
+The grid simply shows reality: days passing, one at a time, with no judgment.

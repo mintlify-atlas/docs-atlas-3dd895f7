@@ -1,0 +1,297 @@
+---
+title: Widget Data Service
+description: Widget data syncing functions for iOS App Groups
+---
+
+The Widget Data Service exports timeline data to iOS App Groups for widget consumption. Widgets read from the shared container to display timeline progress.
+
+<Note>
+  Widget sync requires a development build with the `@bacons/apple-targets` package and proper App Groups entitlements. Widget sync will not work in Expo Go.
+</Note>
+
+## Types
+
+### WidgetTimelineMetadata
+
+Lightweight timeline metadata for widget configuration.
+
+```typescript
+export interface WidgetTimelineMetadata {
+  id: string;
+  title: string;
+  type: string;
+}
+```
+
+### WidgetTimelineData
+
+Widget-optimized timeline data with full stats for display.
+
+```typescript
+export interface WidgetTimelineData {
+  id: string;
+  type: string;
+  title: string;
+  startDate: string; // ISO 8601
+  endDate: string; // ISO 8601
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number; // 0-100
+}
+```
+
+### WidgetSettingsData
+
+Widget settings data for theme and color preferences.
+
+```typescript
+export interface WidgetSettingsData {
+  gridColorTheme: string; // 'classic' | 'forest' | 'sunset' | 'monochrome'
+  themeMode: string; // 'system' | 'light' | 'dark'
+}
+```
+
+---
+
+## Sync Functions
+
+### syncActiveTimelineToWidget
+
+Export active timeline data to App Groups for widgets. Automatically calculates timeline stats and updates the shared container.
+
+```typescript
+export async function syncActiveTimelineToWidget(): Promise<void>
+```
+
+**When to call:**
+- On app launch
+- When active timeline changes
+- When timeline is updated (e.g., week timeline refresh)
+
+**Example:**
+
+```typescript
+import { syncActiveTimelineToWidget } from '@/services/widget-data-service';
+import { setActiveTimeline } from '@/services/storage';
+
+// After changing active timeline
+await setActiveTimeline('timeline_1234567890_abc123');
+await syncActiveTimelineToWidget();
+```
+
+---
+
+### syncAllTimelinesToWidget
+
+Export all timelines data to App Groups for widget configuration. This allows widgets to display any timeline, not just the active one.
+
+```typescript
+export async function syncAllTimelinesToWidget(): Promise<void>
+```
+
+**When to call:**
+- On app launch
+- When a timeline is created
+- When a timeline is updated (title/type changes)
+- When a timeline is deleted
+
+**Example:**
+
+```typescript
+import { syncAllTimelinesToWidget } from '@/services/widget-data-service';
+import { saveTimeline, createTimeline } from '@/services/storage';
+import { TimelineType } from '@/types/timeline';
+
+// After creating a new timeline
+const newTimeline = createTimeline(TimelineType.YEAR);
+await saveTimeline(newTimeline);
+await syncAllTimelinesToWidget();
+```
+
+---
+
+### syncSettingsToWidget
+
+Export settings to App Groups for widgets. Syncs theme mode and grid color theme.
+
+```typescript
+export async function syncSettingsToWidget(): Promise<void>
+```
+
+**When to call:**
+- On app launch
+- When theme mode changes
+- When grid color theme changes
+
+**Example:**
+
+```typescript
+import { syncSettingsToWidget } from '@/services/widget-data-service';
+import { updateThemeMode } from '@/services/storage';
+
+// After updating theme
+await updateThemeMode('dark');
+await syncSettingsToWidget();
+```
+
+---
+
+### syncProStatusToWidget
+
+Export Pro subscription status to App Groups for widgets. Allows widgets to check if user has Pro subscription.
+
+```typescript
+export async function syncProStatusToWidget(): Promise<void>
+```
+
+**When to call:**
+- On app launch
+- After successful purchase
+- After successful restore
+
+**Example:**
+
+```typescript
+import { syncProStatusToWidget } from '@/services/widget-data-service';
+
+// After purchase
+await purchaseProSubscription();
+await syncProStatusToWidget();
+```
+
+---
+
+### syncAllWidgetData
+
+Sync all widget data (active timeline + all timelines + settings + pro status). Convenience function for initial app setup and comprehensive sync.
+
+```typescript
+export async function syncAllWidgetData(): Promise<void>
+```
+
+**When to call:**
+- On app launch
+- After app update
+- When performing comprehensive sync
+
+**Example:**
+
+```typescript
+import { syncAllWidgetData } from '@/services/widget-data-service';
+import { useEffect } from 'react';
+
+// In your root component
+useEffect(() => {
+  syncAllWidgetData();
+}, []);
+```
+
+---
+
+## Debug Functions
+
+### getWidgetData
+
+Get widget data from App Groups for debugging purposes.
+
+```typescript
+export function getWidgetData(): {
+  timeline: string | null;
+  settings: string | null;
+  lastUpdate: string | null;
+}
+```
+
+<ResponseField name="return" type="object">
+  Object containing widget data
+  
+  <ResponseField name="timeline" type="string | null">
+    JSON string of active timeline data
+  </ResponseField>
+  
+  <ResponseField name="settings" type="string | null">
+    JSON string of settings data
+  </ResponseField>
+  
+  <ResponseField name="lastUpdate" type="string | null">
+    ISO 8601 timestamp of last update
+  </ResponseField>
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getWidgetData } from '@/services/widget-data-service';
+
+const data = getWidgetData();
+console.log('Widget timeline:', data.timeline);
+console.log('Widget settings:', data.settings);
+console.log('Last update:', data.lastUpdate);
+```
+
+---
+
+## Configuration
+
+### App Group ID
+
+The service uses the following App Group identifier, which must match the entitlements in `app.json`:
+
+```typescript
+const APP_GROUP_ID = 'group.com.stoiccalendar.shared';
+```
+
+### Widget Data Keys
+
+Internal storage keys used in the shared container:
+
+- `widget_active_timeline` - Active timeline data
+- `widget_all_timelines` - All timelines array
+- `widget_settings` - Settings data
+- `widget_last_update` - Last update timestamp
+- `widget_is_pro` - Pro subscription status
+- `widget_data_version` - Data version marker
+
+---
+
+## Implementation Notes
+
+### Platform Support
+
+Widget sync only works on iOS. All sync functions silently return on other platforms.
+
+```typescript
+import { Platform } from 'react-native';
+
+if (Platform.OS === 'ios') {
+  await syncActiveTimelineToWidget();
+}
+```
+
+### Non-Fatal Errors
+
+Widget sync errors are non-fatal and logged to console. The app continues to function even if widget sync fails.
+
+### Auto Widget Reload
+
+After syncing data, the service automatically triggers widget reload using `ExtensionStorage.reloadWidget()` so changes appear immediately.
+
+### Race Condition Protection
+
+The `syncAllTimelinesToWidget` function uses version markers to help widgets detect partial writes during race conditions:
+
+```typescript
+storage.set(WIDGET_DATA_KEYS.DATA_VERSION, `writing_${Date.now()}`);
+storage.set(WIDGET_DATA_KEYS.ALL_TIMELINES, JSON.stringify(timelineDataArray));
+storage.set(WIDGET_DATA_KEYS.DATA_VERSION, Date.now().toString());
+```
+
+### Storage Integration
+
+The Storage Service automatically calls widget sync functions when data changes:
+
+- `setActiveTimeline()` calls `syncActiveTimelineToWidget()`
+- `saveSettings()` calls `syncSettingsToWidget()`
+
+You typically don't need to call these sync functions manually unless implementing custom storage logic.

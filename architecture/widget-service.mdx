@@ -1,0 +1,357 @@
+---
+title: Widget Data Service
+description: iOS widget data syncing via App Groups
+---
+
+The Widget Data Service exports timeline data to iOS App Groups, enabling widgets to display timeline progress without running the main app.
+
+## Overview
+
+**Status**: MVP (iOS only)
+
+**File**: `services/widget-data-service.ts`
+
+The service uses `@bacons/apple-targets` ExtensionStorage to write timeline data to a shared container (`group.com.stoiccalendar.shared`) that widgets can read.
+
+### Architecture
+
+```
+Main App (React Native)
+  ↓
+Widget Data Service
+  ↓
+ExtensionStorage (@bacons/apple-targets)
+  ↓
+App Groups Shared Container
+  ↓
+Widget Extension (WidgetKit)
+```
+
+## Requirements
+
+- iOS only (gracefully degrades on Android)
+- Requires development build (not available in Expo Go)
+- App Group entitlement configured in `app.json`
+
+## Data Structures
+
+### WidgetTimelineData
+
+Full timeline data with calculated stats for widget display:
+
+```typescript
+interface WidgetTimelineData {
+  id: string;
+  type: string;
+  title: string;
+  startDate: string;        // ISO 8601
+  endDate: string;          // ISO 8601
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number; // 0-100
+}
+```
+
+### WidgetSettingsData
+
+Theme settings for widget appearance:
+
+```typescript
+interface WidgetSettingsData {
+  gridColorTheme: string;  // 'classic' | 'forest' | 'sunset' | 'monochrome'
+  themeMode: string;       // 'system' | 'light' | 'dark'
+}
+```
+
+## Core Functions
+
+### syncActiveTimelineToWidget()
+
+Exports the active timeline to widgets:
+
+```typescript
+export async function syncActiveTimelineToWidget(): Promise<void>
+```
+
+**When to call**:
+- On app launch
+- When active timeline changes
+- When timeline is updated (e.g., week timeline refresh)
+
+**Behavior**:
+- Fetches active timeline ID
+- Calculates timeline stats
+- Writes to `widget_active_timeline` key
+- Triggers widget reload
+- Clears data if no active timeline
+
+**Example**:
+
+```typescript
+import { syncActiveTimelineToWidget } from '@/services/widget-data-service';
+
+// After switching active timeline
+await setActiveTimeline(newTimelineId);
+await syncActiveTimelineToWidget();
+```
+
+### syncAllTimelinesToWidget()
+
+Exports all timelines for widget configuration:
+
+```typescript
+export async function syncAllTimelinesToWidget(): Promise<void>
+```
+
+**When to call**:
+- On app launch
+- When timeline is created
+- When timeline is updated (title/type changes)
+- When timeline is deleted
+
+**Behavior**:
+- Fetches all timelines
+- Calculates stats for each
+- Writes array to `widget_all_timelines` key
+- Uses versioning to detect partial writes
+
+**Example**:
+
+```typescript
+import { syncAllTimelinesToWidget } from '@/services/widget-data-service';
+
+// After creating new timeline
+await saveTimeline(newTimeline);
+await syncAllTimelinesToWidget();
+```
+
+### syncSettingsToWidget()
+
+Exports theme settings to widgets:
+
+```typescript
+export async function syncSettingsToWidget(): Promise<void>
+```
+
+**When to call**:
+- On app launch
+- When theme mode changes
+- When grid color theme changes
+
+**Example**:
+
+```typescript
+import { syncSettingsToWidget } from '@/services/widget-data-service';
+
+// After changing theme
+await saveSettings({ ...settings, themeMode: 'dark' });
+await syncSettingsToWidget();
+```
+
+### syncProStatusToWidget()
+
+Exports Pro subscription status to widgets:
+
+```typescript
+export async function syncProStatusToWidget(): Promise<void>
+```
+
+**When to call**:
+- On app launch
+- After successful purchase
+- After successful restore
+
+**Behavior**:
+- Checks Pro status via RevenueCat
+- Writes "true" or "false" to `widget_is_pro` key
+- Triggers widget reload
+
+**Note**: Automatically called by `purchasePackage()` and `restorePurchases()` in revenue-cat-service.ts.
+
+### syncAllWidgetData()
+
+Convenience function that syncs everything:
+
+```typescript
+export async function syncAllWidgetData(): Promise<void>
+```
+
+**Usage**:
+
+```typescript
+import { syncAllWidgetData } from '@/services/widget-data-service';
+
+// On app launch (app/_layout.tsx)
+useEffect(() => {
+  syncAllWidgetData();
+}, []);
+```
+
+## Storage Keys
+
+Data is stored in the App Groups container with these keys:
+
+```typescript
+const WIDGET_DATA_KEYS = {
+  ACTIVE_TIMELINE: 'widget_active_timeline',     // Active timeline JSON
+  ALL_TIMELINES: 'widget_all_timelines',         // All timelines array JSON
+  SETTINGS: 'widget_settings',                   // Theme settings JSON
+  LAST_UPDATE: 'widget_last_update',             // ISO 8601 timestamp
+  IS_PRO: 'widget_is_pro',                       // "true" or "false"
+  DATA_VERSION: 'widget_data_version',           // Version marker for race condition detection
+};
+```
+
+## App Group Configuration
+
+**App Group ID**: `group.com.stoiccalendar.shared`
+
+This must match the entitlement configured in `app.json`:
+
+```json
+{
+  "ios": {
+    "entitlements": {
+      "com.apple.security.application-groups": [
+        "group.com.stoiccalendar.shared"
+      ]
+    }
+  }
+}
+```
+
+## Native Module
+
+The service uses `@bacons/apple-targets` ExtensionStorage, which is already integrated with Expo autolinking.
+
+For reference, there's also a custom Expo module at `modules/app-groups/` that provides direct UserDefaults access via `setSharedData()`, `getSharedData()`, and `removeSharedData()` functions (see source at `/home/daytona/workspace/source/modules/app-groups/`).
+
+## Error Handling
+
+The service gracefully degrades when widget sync is unavailable:
+
+```typescript
+function getExtensionStorage() {
+  if (Platform.OS !== 'ios') return null;
+  
+  if (!extensionStorage) {
+    try {
+      const { ExtensionStorage } = require('@bacons/apple-targets');
+      extensionStorage = new ExtensionStorage(APP_GROUP_ID);
+    } catch (e) {
+      console.warn('ExtensionStorage not available:', e);
+      return null;
+    }
+  }
+  return extensionStorage;
+}
+```
+
+All sync functions check availability and return early if unavailable:
+
+```typescript
+const storage = getExtensionStorage();
+if (!storage) {
+  return; // Silently skip on Android or in Expo Go
+}
+```
+
+## Widget Reload
+
+After writing critical data, the service triggers widget reload:
+
+```typescript
+try {
+  const { ExtensionStorage } = require('@bacons/apple-targets');
+  ExtensionStorage.reloadWidget();
+} catch {
+  // Ignore if reload not available
+}
+```
+
+This ensures widgets immediately reflect changes to:
+- Active timeline data
+- Pro subscription status
+
+## Debugging
+
+### getWidgetData()
+
+Reads current widget data for debugging:
+
+```typescript
+export function getWidgetData(): {
+  timeline: string | null;
+  settings: string | null;
+  lastUpdate: string | null;
+}
+```
+
+**Usage**:
+
+```typescript
+import { getWidgetData } from '@/services/widget-data-service';
+
+const data = getWidgetData();
+console.log('Active timeline:', data.timeline);
+console.log('Settings:', data.settings);
+console.log('Last update:', data.lastUpdate);
+```
+
+## Integration Example
+
+Complete integration in app lifecycle:
+
+```typescript
+// app/_layout.tsx
+import { useEffect } from 'react';
+import { syncAllWidgetData } from '@/services/widget-data-service';
+
+export default function RootLayout() {
+  useEffect(() => {
+    // Sync all data on app launch
+    syncAllWidgetData();
+  }, []);
+
+  return (
+    <ThemeProvider>
+      <Stack />
+    </ThemeProvider>
+  );
+}
+```
+
+```typescript
+// When timeline changes
+import {
+  syncActiveTimelineToWidget,
+  syncAllTimelinesToWidget
+} from '@/services/widget-data-service';
+
+// Switch active timeline
+async function switchTimeline(id: string) {
+  await setActiveTimeline(id);
+  await syncActiveTimelineToWidget();
+}
+
+// Create timeline
+async function createNewTimeline(timeline: Timeline) {
+  await saveTimeline(timeline);
+  await syncAllTimelinesToWidget();
+}
+
+// Update timeline
+async function updateTimeline(timeline: Timeline) {
+  await saveTimeline(timeline);
+  await syncActiveTimelineToWidget(); // If active
+  await syncAllTimelinesToWidget();   // Update list
+}
+```
+
+## Future Enhancements
+
+- Android widget support (requires different approach)
+- Widget configuration picker (user selects timeline per widget)
+- Widget size variants (small, medium, large)
+- Custom widget refresh intervals

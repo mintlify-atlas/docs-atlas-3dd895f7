@@ -1,0 +1,682 @@
+---
+title: Timeline Calculator
+description: Timeline creation and calculation functions for Stoic Calendar
+---
+
+The Timeline Calculator Service provides business logic for creating timelines, calculating progress statistics, and managing timeline updates.
+
+## Types
+
+### TimelineConfig
+
+Configuration data returned when creating a timeline from a type.
+
+```typescript
+export interface TimelineConfig {
+  startDate: string;
+  endDate: string;
+  title: string;
+}
+```
+
+### TimelineStats
+
+Calculated statistics for a timeline.
+
+```typescript
+export interface TimelineStats {
+  daysPassed: number;
+  daysRemaining: number;
+  totalDays: number;
+  progressPercentage: number;
+}
+```
+
+---
+
+## Timeline Creation
+
+### calculateTimelineFromType
+
+Generate timeline configuration from a timeline type.
+
+```typescript
+export function calculateTimelineFromType(
+  type: TimelineType,
+  customOptions?: {
+    year?: number;
+    month?: number;
+    startDate?: Date;
+    endDate?: Date;
+    title?: string;
+  }
+): TimelineConfig
+```
+
+<ParamField path="type" type="TimelineType" required>
+  Timeline type (YEAR, MONTH, WEEK, CUSTOM)
+</ParamField>
+
+<ParamField path="customOptions" type="object">
+  Optional custom configuration
+  
+  <ParamField path="year" type="number">
+    Year for YEAR type (defaults to current year)
+  </ParamField>
+  
+  <ParamField path="month" type="number">
+    Month for MONTH type (0-11, defaults to current month)
+  </ParamField>
+  
+  <ParamField path="startDate" type="Date">
+    Start date for CUSTOM type (required for CUSTOM)
+  </ParamField>
+  
+  <ParamField path="endDate" type="Date">
+    End date for CUSTOM type (required for CUSTOM)
+  </ParamField>
+  
+  <ParamField path="title" type="string">
+    Custom title for CUSTOM type
+  </ParamField>
+</ParamField>
+
+<ResponseField name="return" type="TimelineConfig">
+  Timeline configuration with start/end dates and title
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateTimelineFromType } from '@/services/timeline-calculator';
+import { TimelineType } from '@/types/timeline';
+
+// Create current year timeline
+const yearConfig = calculateTimelineFromType(TimelineType.YEAR);
+console.log(yearConfig);
+// { startDate: '2026-01-01T00:00:00.000Z', endDate: '2026-12-31T23:59:59.999Z', title: '2026' }
+
+// Create specific year timeline
+const year2027 = calculateTimelineFromType(TimelineType.YEAR, { year: 2027 });
+
+// Create current month timeline
+const monthConfig = calculateTimelineFromType(TimelineType.MONTH);
+
+// Create current week timeline
+const weekConfig = calculateTimelineFromType(TimelineType.WEEK);
+
+// Create custom timeline
+const customConfig = calculateTimelineFromType(TimelineType.CUSTOM, {
+  startDate: new Date('2026-01-01'),
+  endDate: new Date('2026-12-31'),
+  title: 'My Custom Year',
+});
+```
+
+---
+
+### createTimeline
+
+Create a new timeline object ready to be saved.
+
+```typescript
+export function createTimeline(
+  type: TimelineType,
+  customOptions?: {
+    year?: number;
+    month?: number;
+    startDate?: Date;
+    endDate?: Date;
+    title?: string;
+    isActive?: boolean;
+  }
+): Timeline
+```
+
+<ParamField path="type" type="TimelineType" required>
+  Timeline type
+</ParamField>
+
+<ParamField path="customOptions" type="object">
+  Optional custom configuration
+  
+  <ParamField path="year" type="number">
+    Year for YEAR type
+  </ParamField>
+  
+  <ParamField path="month" type="number">
+    Month for MONTH type (0-11)
+  </ParamField>
+  
+  <ParamField path="startDate" type="Date">
+    Start date for CUSTOM type
+  </ParamField>
+  
+  <ParamField path="endDate" type="Date">
+    End date for CUSTOM type
+  </ParamField>
+  
+  <ParamField path="title" type="string">
+    Custom title
+  </ParamField>
+  
+  <ParamField path="isActive" type="boolean">
+    Set as active timeline (defaults to false)
+  </ParamField>
+</ParamField>
+
+<ResponseField name="return" type="Timeline">
+  Complete Timeline object with generated ID and timestamps
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { createTimeline } from '@/services/timeline-calculator';
+import { saveTimeline } from '@/services/storage';
+import { TimelineType } from '@/types/timeline';
+
+// Create and save a year timeline
+const timeline = createTimeline(TimelineType.YEAR);
+await saveTimeline(timeline);
+
+// Create a custom timeline
+const customTimeline = createTimeline(TimelineType.CUSTOM, {
+  startDate: new Date('2026-06-01'),
+  endDate: new Date('2026-12-31'),
+  title: 'Summer to End of Year',
+  isActive: true,
+});
+await saveTimeline(customTimeline);
+```
+
+---
+
+## Timeline Calculations
+
+### calculateTimelineStats
+
+Calculate statistics for a timeline.
+
+```typescript
+export function calculateTimelineStats(timeline: Timeline): TimelineStats
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to calculate stats for
+</ParamField>
+
+<ResponseField name="return" type="TimelineStats">
+  Timeline statistics including days passed, remaining, total, and progress percentage
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { calculateTimelineStats } from '@/services/timeline-calculator';
+import { getActiveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline) {
+  const stats = calculateTimelineStats(timeline);
+  console.log(`Progress: ${stats.daysPassed}/${stats.totalDays} days (${stats.progressPercentage}%)`);
+}
+```
+
+---
+
+### getTimelineDaysPassed
+
+Get days passed for a timeline.
+
+```typescript
+export function getTimelineDaysPassed(timeline: Timeline): number
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to calculate
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Number of days passed
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineDaysPassed } from '@/services/timeline-calculator';
+
+const daysPassed = getTimelineDaysPassed(timeline);
+console.log(`${daysPassed} days have passed`);
+```
+
+---
+
+### getTimelineDaysRemaining
+
+Get days remaining for a timeline.
+
+```typescript
+export function getTimelineDaysRemaining(timeline: Timeline): number
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to calculate
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Number of days remaining
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineDaysRemaining } from '@/services/timeline-calculator';
+
+const daysRemaining = getTimelineDaysRemaining(timeline);
+console.log(`${daysRemaining} days remaining`);
+```
+
+---
+
+### getTimelineTotalDays
+
+Get total days for a timeline.
+
+```typescript
+export function getTimelineTotalDays(timeline: Timeline): number
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to calculate
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Total number of days in timeline
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineTotalDays } from '@/services/timeline-calculator';
+
+const totalDays = getTimelineTotalDays(timeline);
+console.log(`Timeline has ${totalDays} total days`);
+```
+
+---
+
+### getTimelineProgressPercentage
+
+Get progress percentage for a timeline (0-100).
+
+```typescript
+export function getTimelineProgressPercentage(timeline: Timeline): number
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to calculate
+</ParamField>
+
+<ResponseField name="return" type="number">
+  Progress percentage (0-100)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineProgressPercentage } from '@/services/timeline-calculator';
+
+const progress = getTimelineProgressPercentage(timeline);
+console.log(`${progress}% complete`);
+```
+
+---
+
+## Timeline Updates
+
+### updateWeekTimeline
+
+Update a "This Week" timeline to the current week. Should be called when the app detects a week change.
+
+```typescript
+export function updateWeekTimeline(timeline: Timeline): Timeline
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Week timeline to update
+</ParamField>
+
+<ResponseField name="return" type="Timeline">
+  Updated timeline with new dates for current week
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { updateWeekTimeline, weekTimelineNeedsUpdate } from '@/services/timeline-calculator';
+import { saveTimeline, getActiveTimeline } from '@/services/storage';
+
+const timeline = await getActiveTimeline();
+if (timeline && weekTimelineNeedsUpdate(timeline)) {
+  const updated = updateWeekTimeline(timeline);
+  await saveTimeline(updated);
+}
+```
+
+---
+
+### weekTimelineNeedsUpdate
+
+Check if a week timeline needs to be updated. Returns true if the timeline's week is not the current week.
+
+```typescript
+export function weekTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Week timeline to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if update is needed
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { weekTimelineNeedsUpdate } from '@/services/timeline-calculator';
+
+if (weekTimelineNeedsUpdate(timeline)) {
+  console.log('Week timeline needs update!');
+}
+```
+
+---
+
+### updateMonthTimeline
+
+Update a "This Month" timeline to the current month.
+
+```typescript
+export function updateMonthTimeline(timeline: Timeline): Timeline
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Month timeline to update
+</ParamField>
+
+<ResponseField name="return" type="Timeline">
+  Updated timeline with new dates for current month
+</ResponseField>
+
+---
+
+### monthTimelineNeedsUpdate
+
+Check if a month timeline needs to be updated. Returns true if the timeline's month is not the current month.
+
+```typescript
+export function monthTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Month timeline to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if update is needed
+</ResponseField>
+
+---
+
+### updateYearTimeline
+
+Update a "Current Year" timeline to the current year.
+
+```typescript
+export function updateYearTimeline(timeline: Timeline): Timeline
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Year timeline to update
+</ParamField>
+
+<ResponseField name="return" type="Timeline">
+  Updated timeline with new dates for current year
+</ResponseField>
+
+---
+
+### yearTimelineNeedsUpdate
+
+Check if a year timeline needs to be updated. Returns true if the timeline's year is not the current year.
+
+```typescript
+export function yearTimelineNeedsUpdate(timeline: Timeline): boolean
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Year timeline to check
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if update is needed
+</ResponseField>
+
+---
+
+### updateTimelineIfNeeded
+
+Check if any timeline needs to be updated and return updated version. Automatically detects timeline type and applies appropriate update.
+
+```typescript
+export function updateTimelineIfNeeded(
+  timeline: Timeline
+): { timeline: Timeline; wasUpdated: boolean }
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to check and potentially update
+</ParamField>
+
+<ResponseField name="return" type="object">
+  Object containing updated timeline and boolean indicating if update occurred
+  
+  <ResponseField name="timeline" type="Timeline">
+    Updated timeline (or original if no update needed)
+  </ResponseField>
+  
+  <ResponseField name="wasUpdated" type="boolean">
+    True if timeline was updated
+  </ResponseField>
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { updateTimelineIfNeeded } from '@/services/timeline-calculator';
+import { saveTimeline, loadTimelines } from '@/services/storage';
+
+const timelines = await loadTimelines();
+for (const timeline of timelines) {
+  const { timeline: updated, wasUpdated } = updateTimelineIfNeeded(timeline);
+  if (wasUpdated) {
+    await saveTimeline(updated);
+    console.log(`Updated timeline: ${updated.title}`);
+  }
+}
+```
+
+---
+
+## Timeline Validation
+
+### validateTimeline
+
+Validate a timeline object. Checks for required fields and valid dates.
+
+```typescript
+export function validateTimeline(timeline: Partial<Timeline>): boolean
+```
+
+<ParamField path="timeline" type="Partial<Timeline>" required>
+  Timeline to validate
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if valid, throws error if invalid
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { validateTimeline } from '@/services/timeline-calculator';
+
+try {
+  validateTimeline(timeline);
+  console.log('Timeline is valid');
+} catch (error) {
+  console.error('Validation error:', error.message);
+}
+```
+
+---
+
+## Helper Functions
+
+### getTimelineDescription
+
+Get a human-readable description of a timeline.
+
+```typescript
+export function getTimelineDescription(timeline: Timeline): string
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to describe
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Description string (e.g., "Year · 1%", "Week · 100%", "Custom · 50%")
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineDescription } from '@/services/timeline-calculator';
+
+const description = getTimelineDescription(timeline);
+console.log(description); // "Year · 18%"
+```
+
+---
+
+### getTimelineProgress
+
+Get a human-readable progress string.
+
+```typescript
+export function getTimelineProgress(timeline: Timeline): string
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to describe
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Progress string (e.g., "3 of 365 days", "7 of 7 days")
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineProgress } from '@/services/timeline-calculator';
+
+const progress = getTimelineProgress(timeline);
+console.log(progress); // "65 of 365 days"
+```
+
+---
+
+### getTimelineRemaining
+
+Get a human-readable remaining string.
+
+```typescript
+export function getTimelineRemaining(timeline: Timeline): string
+```
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline to describe
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Remaining string (e.g., "362 days remaining", "0 days remaining")
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { getTimelineRemaining } from '@/services/timeline-calculator';
+
+const remaining = getTimelineRemaining(timeline);
+console.log(remaining); // "300 days remaining"
+```
+
+---
+
+### sortTimelinesByDate
+
+Sort timelines by creation date (newest first).
+
+```typescript
+export function sortTimelinesByDate(timelines: Timeline[]): Timeline[]
+```
+
+<ParamField path="timelines" type="Timeline[]" required>
+  Array of timelines to sort
+</ParamField>
+
+<ResponseField name="return" type="Timeline[]">
+  Sorted array (newest first)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { sortTimelinesByDate } from '@/services/timeline-calculator';
+import { loadTimelines } from '@/services/storage';
+
+const timelines = await loadTimelines();
+const sorted = sortTimelinesByDate(timelines);
+```
+
+---
+
+### sortTimelinesWithActiveFirst
+
+Sort timelines with active timeline first, then by creation date.
+
+```typescript
+export function sortTimelinesWithActiveFirst(timelines: Timeline[]): Timeline[]
+```
+
+<ParamField path="timelines" type="Timeline[]" required>
+  Array of timelines to sort
+</ParamField>
+
+<ResponseField name="return" type="Timeline[]">
+  Sorted array (active first, then newest first)
+</ResponseField>
+
+**Example:**
+
+```typescript
+import { sortTimelinesWithActiveFirst } from '@/services/timeline-calculator';
+import { loadTimelines } from '@/services/storage';
+
+const timelines = await loadTimelines();
+const sorted = sortTimelinesWithActiveFirst(timelines);
+// Active timeline will be first in the array
+```

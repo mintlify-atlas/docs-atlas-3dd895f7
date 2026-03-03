@@ -1,0 +1,365 @@
+---
+title: Testing
+description: Testing strategy and commands for Stoic Calendar
+---
+
+This guide covers the testing approach and available testing commands for Stoic Calendar.
+
+## Testing Philosophy
+
+Stoic Calendar follows a minimalist testing approach focused on critical user flows and data integrity. As an MVP, the testing strategy prioritizes:
+
+1. **Manual Testing**: Primary method for UI/UX validation
+2. **Code Quality**: ESLint for code standards and type safety
+3. **Type Safety**: TypeScript strict mode for compile-time validation
+
+## Code Quality Checks
+
+### Linting
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+This executes `expo lint` which uses the `eslint-config-expo` configuration.
+
+### TypeScript Type Checking
+
+The project uses TypeScript with strict mode enabled. Type checking happens automatically during:
+
+- Development (in your IDE)
+- Build time
+- Pre-commit hooks (if configured)
+
+Manual type checking:
+
+```bash
+npx tsc --noEmit
+```
+
+## Manual Testing Checklist
+
+### Timeline Creation
+
+<Steps>
+  <Step title="Year Timeline">
+    1. Navigate to Timelines tab
+    2. Tap "Create Timeline"
+    3. Select "Year" type
+    4. Verify the current year is pre-filled
+    5. Create and verify it appears in the list
+    6. Check that the grid shows 365/366 squares
+  </Step>
+
+  <Step title="Month Timeline">
+    1. Create a "Month" timeline
+    2. Verify the current month is pre-filled
+    3. Check grid shows 28-31 squares based on month
+    4. Verify progress updates daily
+  </Step>
+
+  <Step title="Week Timeline">
+    1. Create a "Week" timeline
+    2. Verify it shows Monday-Sunday of current week
+    3. Check grid shows 7 squares
+    4. Test auto-update behavior (should update to current week on app launch)
+  </Step>
+
+  <Step title="Custom Timeline">
+    1. Create a "Custom" timeline
+    2. Set custom start and end dates
+    3. Verify date picker works correctly
+    4. Check grid matches total days
+    5. Test with past, present, and future date ranges
+  </Step>
+</Steps>
+
+### Active Timeline Management
+
+<Steps>
+  <Step title="Test active timeline switching">
+    1. Create multiple timelines
+    2. Tap on a timeline to make it active
+    3. Navigate to Home tab
+    4. Verify the active timeline is displayed
+    5. Return to Timelines tab and switch active timeline
+    6. Confirm Home tab updates
+  </Step>
+
+  <Step title="Verify single active timeline">
+    Only ONE timeline should have `isActive: true` at any time.
+  </Step>
+</Steps>
+
+### Data Persistence
+
+<Steps>
+  <Step title="Test AsyncStorage persistence">
+    1. Create several timelines
+    2. Set an active timeline
+    3. Force quit the app
+    4. Relaunch the app
+    5. Verify all timelines are restored
+    6. Verify the correct timeline is active
+  </Step>
+
+  <Step title="Test timeline updates">
+    1. Edit a timeline
+    2. Force quit and relaunch
+    3. Verify changes persisted
+  </Step>
+
+  <Step title="Test timeline deletion">
+    1. Delete a timeline
+    2. Force quit and relaunch
+    3. Verify timeline is permanently deleted
+  </Step>
+</Steps>
+
+### Settings and Theme
+
+<Steps>
+  <Step title="Test theme switching">
+    1. Navigate to Settings
+    2. Toggle between Light, Dark, and System theme modes
+    3. Verify UI updates immediately
+    4. Check that grid colors update correctly
+    5. Force quit and verify theme persists
+  </Step>
+
+  <Step title="Test default dark mode">
+    On first launch, the app should default to dark mode (`DEFAULT_SETTINGS.themeMode = 'dark'`).
+  </Step>
+</Steps>
+
+### Grid Visualization
+
+<Steps>
+  <Step title="Test grid rendering">
+    1. Create timelines with various durations (7 days, 30 days, 365 days)
+    2. Verify grid calculates correct dimensions
+    3. Check that passed days are filled
+    4. Check that today is highlighted
+    5. Check that future days are empty
+  </Step>
+
+  <Step title="Test grid responsiveness">
+    1. Test on different screen sizes
+    2. Rotate device (if tablet support is enabled in future)
+    3. Verify grid adapts without breaking
+  </Step>
+</Steps>
+
+## Platform-Specific Testing
+
+### iOS Testing
+
+```bash
+# Test on iOS Simulator
+npm run ios
+
+# Test on specific simulator
+npm run ios -- --simulator="iPhone 15 Pro"
+
+# Test on physical device
+npm run ios --device
+```
+
+**iOS-Specific Checks**:
+- Haptic feedback (uses `expo-haptics`)
+- Status bar appearance in dark/light mode
+- Safe area insets (notch/Dynamic Island)
+- App Groups entitlement (for future widget support)
+
+### Android Testing
+
+```bash
+# Test on Android Emulator
+npm run android
+
+# Test on physical device
+adb devices  # Verify device connected
+npm run android
+```
+
+**Android-Specific Checks**:
+- Edge-to-edge display (`edgeToEdgeEnabled: true`)
+- System navigation (gesture vs. button)
+- Adaptive icon rendering
+- Back button behavior
+
+## Development Testing Workflow
+
+### Quick Development Testing
+
+<Steps>
+  <Step title="Start development server">
+    ```bash
+    npx expo start
+    ```
+  </Step>
+
+  <Step title="Enable Fast Refresh">
+    Fast Refresh is enabled by default. Save files to see changes immediately without full reload.
+  </Step>
+
+  <Step title="Use debug menu">
+    - **iOS Simulator**: Cmd+D
+    - **Android Emulator**: Cmd+M (Mac) or Ctrl+M (Windows/Linux)
+    - **Physical Device**: Shake the device
+    
+    Debug menu options:
+    - Reload
+    - Enable/Disable Fast Refresh
+    - Toggle Element Inspector
+    - Show Performance Monitor
+  </Step>
+</Steps>
+
+### Testing Data Layer
+
+Key functions to test manually via console or temporary UI:
+
+```typescript
+// Import in a test screen
+import { loadTimelines, saveTimeline, getActiveTimeline } from '@/services/storage';
+import { createTimeline, calculateTimelineStats } from '@/services/timeline-calculator';
+import { weekTimelineNeedsUpdate, updateWeekTimeline } from '@/services/timeline-calculator';
+
+// Test timeline creation
+const yearTimeline = createTimeline('year');
+const monthTimeline = createTimeline('month');
+const weekTimeline = createTimeline('week');
+
+// Test stats calculation
+const stats = calculateTimelineStats(timeline);
+console.log(stats.daysPassed, stats.daysRemaining, stats.progressPercentage);
+
+// Test week auto-update
+if (weekTimelineNeedsUpdate(weekTimeline)) {
+  const updated = updateWeekTimeline(weekTimeline);
+}
+```
+
+## Automated Testing (Future)
+
+The project is ready for automated testing. Recommended additions:
+
+### Unit Tests (Jest)
+
+```bash
+# Install Jest (not currently configured)
+npm install --save-dev jest @testing-library/react-native
+```
+
+Priority test files:
+- `utils/date-helpers.test.ts` - Date calculations
+- `services/timeline-calculator.test.ts` - Timeline logic
+- `utils/grid-layout.test.ts` - Grid calculations
+
+### E2E Tests (Detox or Maestro)
+
+Recommended for critical user flows:
+- Timeline creation and switching
+- Theme toggle
+- Data persistence
+
+## Known Testing Gaps
+
+As an MVP, these areas need manual validation:
+
+1. **Week Timeline Auto-Update**: Test by changing system date
+2. **Storage Migration**: Test by installing older version, then updating
+3. **Widget Integration**: Not yet implemented (placeholder in data model)
+4. **Firebase Sync**: Not yet implemented (data structure is ready)
+5. **RevenueCat**: Not yet implemented (placeholder service exists)
+
+## Debugging Tools
+
+### React DevTools
+
+```bash
+npx react-devtools
+```
+
+Inspect component hierarchy and props.
+
+### Reactotron (Optional)
+
+For advanced debugging, consider adding Reactotron:
+
+```bash
+npm install --save-dev reactotron-react-native
+```
+
+### AsyncStorage Inspector
+
+To inspect stored data:
+
+1. Open debug menu
+2. Select "Debug JS Remotely" or use Flipper
+3. Use browser console to inspect AsyncStorage:
+
+```javascript
+AsyncStorage.getAllKeys().then(keys => {
+  AsyncStorage.multiGet(keys).then(data => console.log(data));
+});
+```
+
+## Performance Testing
+
+### Monitor Performance
+
+1. Enable Performance Monitor from debug menu
+2. Watch for:
+   - JS frame rate (should stay at 60 FPS)
+   - UI frame rate (should stay at 60 FPS)
+   - RAM usage
+
+### Test Large Grids
+
+Create timelines with large day counts:
+- 365-day year timeline
+- Multi-year custom timeline
+
+Verify grid rendering remains smooth.
+
+## Pre-Release Checklist
+
+Before submitting to app stores:
+
+<Steps>
+  <Step title="Run all linting checks">
+    ```bash
+    npm run lint
+    npx tsc --noEmit
+    ```
+  </Step>
+
+  <Step title="Test on multiple devices">
+    - Various iOS versions (iOS 15+)
+    - Various Android versions (Android 10+)
+    - Different screen sizes
+  </Step>
+
+  <Step title="Complete manual testing checklist">
+    Execute all test scenarios above.
+  </Step>
+
+  <Step title="Verify build configurations">
+    - Check version numbers in `app.json`
+    - Verify bundle identifiers
+    - Confirm signing certificates
+  </Step>
+
+  <Step title="Test production builds">
+    ```bash
+    eas build --profile production --platform ios
+    eas build --profile production --platform android
+    ```
+    
+    Install and test production builds on real devices.
+  </Step>
+</Steps>

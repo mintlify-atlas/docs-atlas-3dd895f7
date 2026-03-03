@@ -1,0 +1,225 @@
+---
+title: "TimelineCard"
+description: "Timeline list item component with mini grid preview"
+---
+
+# TimelineCard
+
+Displays a timeline in a list with title, progress information, and a mini grid preview. Used in the timeline management screen.
+
+## Features
+
+- **Active indicator**: Blue left border for active timeline
+- **Mini grid preview**: Shows timeline visualization in 60x60 container
+- **Progress display**: Shows type, percentage, and day counts
+- **Edit button**: For custom timelines only
+- **Delete button**: Optional, positioned at top-right corner
+- **Pressable**: Tap to set as active timeline
+
+## Import
+
+```tsx
+import { TimelineCard } from '@/components/timeline-card';
+```
+
+## Props
+
+<ParamField path="timeline" type="Timeline" required>
+  Timeline object to display. Must include all Timeline properties (id, type, title, startDate, endDate, isActive, etc.).
+</ParamField>
+
+<ParamField path="onPress" type="(timeline: Timeline) => void">
+  Called when the card is pressed. Typically used to set the timeline as active.
+</ParamField>
+
+<ParamField path="onEdit" type="(timeline: Timeline) => void">
+  Called when the edit button is pressed. Only available for custom timelines (type === 'custom').
+  
+  Edit button appears below the progress text and is styled with accent color.
+</ParamField>
+
+<ParamField path="onDelete" type="(timeline: Timeline) => void">
+  Called when the delete button is pressed. Delete button is only visible when `showDelete={true}`.
+</ParamField>
+
+<ParamField path="showDelete" type="boolean" default="false">
+  Show delete button at top-right corner of card. Button displays as a large "×" symbol with reduced opacity.
+</ParamField>
+
+## Usage Examples
+
+### Basic Timeline Card
+
+```tsx
+import { TimelineCard } from '@/components/timeline-card';
+import { Timeline } from '@/types/timeline';
+
+function TimelineList({ timelines }: { timelines: Timeline[] }) {
+  const handlePress = (timeline: Timeline) => {
+    // Set as active timeline
+    setActiveTimeline(timeline.id);
+  };
+
+  return (
+    <View>
+      {timelines.map((timeline) => (
+        <TimelineCard
+          key={timeline.id}
+          timeline={timeline}
+          onPress={handlePress}
+        />
+      ))}
+    </View>
+  );
+}
+```
+
+### Editable Card with Delete
+
+```tsx
+import { Alert } from 'react-native';
+
+function EditableTimelineList({ timelines }: { timelines: Timeline[] }) {
+  const handleEdit = (timeline: Timeline) => {
+    // Open edit form
+    setEditingTimeline(timeline);
+    setShowForm(true);
+  };
+
+  const handleDelete = (timeline: Timeline) => {
+    Alert.alert(
+      'Delete Timeline',
+      `Are you sure you want to delete "${timeline.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteTimeline(timeline.id)
+        }
+      ]
+    );
+  };
+
+  return (
+    <View>
+      {timelines.map((timeline) => (
+        <TimelineCard
+          key={timeline.id}
+          timeline={timeline}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          showDelete={true}
+        />
+      ))}
+    </View>
+  );
+}
+```
+
+### Custom Timeline with Edit Button
+
+```tsx
+function CustomTimelineCard() {
+  const customTimeline: Timeline = {
+    id: '123',
+    type: 'custom',
+    title: 'Project Launch',
+    startDate: '2026-01-01T00:00:00.000Z',
+    endDate: '2026-12-31T23:59:59.999Z',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    isActive: false,
+  };
+
+  return (
+    <TimelineCard
+      timeline={customTimeline}
+      onEdit={(timeline) => {
+        console.log('Editing:', timeline.title);
+      }}
+    />
+  );
+}
+```
+
+## Component Layout
+
+### Card Structure
+
+```
+┌─────────────────────────────────────┐
+│ [×]                          Delete │
+│                                     │
+│ Title (Serif Font)     ┌─────────┐  │
+│ Type · Percentage      │  Mini   │  │
+│ X of Y days            │  Grid   │  │
+│ [Edit] (custom only)   └─────────┘  │
+│                                     │
+└─────────────────────────────────────┘
+  ↑ Blue border if active
+```
+
+### Visual Elements
+
+1. **Active Indicator**: 3px blue left border when `timeline.isActive === true`
+2. **Title**: Serif font, primary text color
+3. **Description**: Shows timeline type (Year/Month/Week/Custom) and progress percentage
+4. **Progress**: "X of Y days" format
+5. **Edit Button**: Only for custom timelines, appears below progress
+6. **Mini Grid**: 60×60px grid preview on the right
+7. **Delete Button**: Top-right corner "×" symbol when `showDelete={true}`
+
+## Behavior
+
+### Press Handling
+
+The entire card is pressable via `Pressable` component:
+- Triggers `onPress` callback with timeline object
+- Edit and delete buttons stop propagation with `e.stopPropagation()`
+
+### Edit Button Visibility
+
+```tsx
+// Edit button only shows for custom timelines
+if (timeline.type === 'custom' && onEdit) {
+  // Show edit button
+}
+```
+
+Predefined timelines (YEAR, MONTH, WEEK) cannot be edited because their dates are auto-calculated.
+
+### Progress Calculation
+
+Progress is calculated using timeline calculator service:
+- `getTimelineDescription()`: Returns "Type · XX%" format
+- `getTimelineProgress()`: Returns "X of Y days" format
+
+### Mini Grid Preview
+
+The 60×60 mini grid uses `StoicGrid` component:
+```tsx
+<View style={{ width: 60, height: 60 }}>
+  <StoicGrid timeline={timeline} mini={true} />
+</View>
+```
+
+### Delete Button Styling
+
+- Position: Absolute at top-right (8px margin)
+- Size: 28×28px touch target
+- Symbol: "×" character at 32px font size
+- Opacity: 0.4 for subtle appearance
+
+## Styling
+
+The component uses theme colors from the color scheme:
+- `cardBackground`: Card background color
+- `accent`: Active indicator border color
+- `textPrimary`: Title color
+- `textSecondary`: Description and progress color
+- `textTertiary`: Delete button color
+
+## Related Components
+
+- [StoicGrid](/api/components/stoic-grid) - Used for mini grid preview
+- [TimelineFormDrawer](/api/components/timeline-form) - Edit timeline details

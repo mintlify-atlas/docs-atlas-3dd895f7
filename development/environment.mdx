@@ -1,0 +1,188 @@
+---
+title: Environment Variables
+description: Environment variables and configuration for Stoic Calendar
+---
+
+## Environment File
+
+Stoic Calendar uses environment variables for configuration. Create a `.env` file in the root directory by copying `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+## Available Variables
+
+### RevenueCat API Key
+
+<ParamField path="EXPO_PUBLIC_REVENUECAT_API_KEY" type="string" required>
+  Your RevenueCat API key for managing in-app purchases and subscriptions.
+</ParamField>
+
+**Configuration:**
+
+```bash
+EXPO_PUBLIC_REVENUECAT_API_KEY=your_api_key_here
+```
+
+**How to obtain:**
+
+<Steps>
+  <Step title="Create RevenueCat account">
+    Sign up at [RevenueCat](https://www.revenuecat.com/) if you don't have an account.
+  </Step>
+
+  <Step title="Create a project">
+    Create a new project in the RevenueCat dashboard.
+  </Step>
+
+  <Step title="Get API key">
+    Navigate to your project settings and copy your API key from the [RevenueCat dashboard](https://app.revenuecat.com/).
+  </Step>
+
+  <Step title="Add to .env file">
+    Paste the API key into your `.env` file:
+    
+    ```bash
+    EXPO_PUBLIC_REVENUECAT_API_KEY=rc_proj_abc123xyz...
+    ```
+  </Step>
+</Steps>
+
+<Note>
+RevenueCat integration is currently not active in the MVP. This configuration is reserved for future premium features.
+</Note>
+
+## Expo Public Variables
+
+All variables prefixed with `EXPO_PUBLIC_` are exposed to the client-side code and can be accessed using:
+
+```typescript
+import Constants from 'expo-constants';
+
+const apiKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_REVENUECAT_API_KEY;
+```
+
+Or through `process.env`:
+
+```typescript
+const apiKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
+```
+
+<Warning>
+Never commit your `.env` file to version control. The `.env.example` file should contain placeholder values only.
+</Warning>
+
+## Configuration Files
+
+### app.json / app.config.js
+
+Expo configuration is managed through `app.json` or `app.config.js`. Environment variables can be accessed in `app.config.js`:
+
+```javascript
+export default {
+  expo: {
+    name: "Stoic Calendar",
+    slug: "stoic-calendar",
+    extra: {
+      revenueCatApiKey: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY,
+    },
+  },
+};
+```
+
+## Environment-Specific Configuration
+
+### Development
+
+For local development, the `.env` file is sufficient. Expo will automatically load variables prefixed with `EXPO_PUBLIC_`.
+
+### Production
+
+For production builds using EAS Build, configure secrets in `eas.json`:
+
+```json
+{
+  "build": {
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_API_KEY": "your_production_key"
+      }
+    }
+  }
+}
+```
+
+Or use EAS Secrets:
+
+```bash
+eas secret:create --name EXPO_PUBLIC_REVENUECAT_API_KEY --value your_key --type string
+```
+
+## Firebase Configuration (Future)
+
+While Firebase is not currently active in the MVP, the app is Firebase-ready. Future Firebase configuration will include:
+
+- `EXPO_PUBLIC_FIREBASE_API_KEY`
+- `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
+- `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `EXPO_PUBLIC_FIREBASE_APP_ID`
+
+<Note>
+The current data structure uses AsyncStorage with Firebase-ready formatting (ISO 8601 dates, flat structure) to enable seamless migration to Firestore when cloud sync is implemented.
+</Note>
+
+## Security Best Practices
+
+<Warning>
+Environment variables prefixed with `EXPO_PUBLIC_` are embedded in the client bundle and are NOT secure. Never store sensitive secrets (like private API keys or tokens) in these variables.
+</Warning>
+
+### What to Store
+
+**Safe for `EXPO_PUBLIC_` variables:**
+- Public API keys (like RevenueCat public SDK key)
+- Feature flags
+- Public configuration values
+
+**NOT safe for `EXPO_PUBLIC_` variables:**
+- Private API keys
+- Database credentials
+- Authentication secrets
+- Encryption keys
+
+### Secure Backend Communication
+
+For sensitive operations:
+1. Store sensitive keys on your backend server
+2. Create API endpoints that use these keys server-side
+3. Have your mobile app call these endpoints
+
+## Troubleshooting
+
+### Variables Not Loading
+
+If environment variables are not loading:
+
+1. Ensure the variable is prefixed with `EXPO_PUBLIC_`
+2. Restart the development server: `npx expo start -c`
+3. Check that `.env` file is in the root directory
+4. Verify the variable name matches exactly
+
+### Production Build Issues
+
+For production builds:
+
+1. Verify EAS secrets are properly configured
+2. Check `eas.json` environment configuration
+3. Ensure secrets are available in the build environment
+
+### Accessing in Native Code
+
+If you need to access variables in native iOS/Android code, you'll need to configure them in:
+- iOS: `Info.plist` or build configuration
+- Android: `build.gradle` or `AndroidManifest.xml`
+
+Refer to [Expo environment variables documentation](https://docs.expo.dev/guides/environment-variables/) for advanced configuration.

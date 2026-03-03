@@ -1,0 +1,392 @@
+---
+title: "Storage Service"
+description: "AsyncStorage persistence layer for timelines and settings"
+---
+
+## Overview
+
+The Storage Service (`services/storage.ts`) provides a centralized AsyncStorage wrapper for all data persistence operations in Stoic Calendar. It manages timelines, app settings, and active timeline state with Firebase-ready data structures.
+
+## Storage Keys
+
+All data is stored under namespaced keys:
+
+```typescript
+const STORAGE_KEYS = {
+  TIMELINES: '@stoic_calendar:timelines',
+  SETTINGS: '@stoic_calendar:settings',
+  ACTIVE_TIMELINE_ID: '@stoic_calendar:active_timeline_id',
+} as const;
+```
+
+**Source:** `services/storage.ts:25-29`
+
+## Timeline Operations
+
+### Load All Timelines
+
+Retrieve all saved timelines from AsyncStorage:
+
+```typescript
+export async function loadTimelines(): Promise<Timeline[]>
+```
+
+**Returns:** Array of timelines (empty array if none exist)
+
+**Example:**
+```typescript
+import { loadTimelines } from '@/services/storage';
+
+const timelines = await loadTimelines();
+console.log(`Found ${timelines.length} timelines`);
+```
+
+**Source:** `services/storage.ts:47-58`
+
+### Save Timeline
+
+Save a new timeline or update an existing one:
+
+```typescript
+export async function saveTimeline(timeline: Timeline): Promise<void>
+```
+
+**Behavior:**
+- If timeline with matching `id` exists, it updates the existing timeline
+- If timeline is new, it appends to the array
+- Automatically serializes to JSON for AsyncStorage
+
+**Example:**
+```typescript
+import { saveTimeline } from '@/services/storage';
+import { createTimeline } from '@/services/timeline-calculator';
+import { TimelineType } from '@/types/timeline';
+
+const newTimeline = createTimeline(TimelineType.YEAR, { year: 2026 });
+await saveTimeline(newTimeline);
+```
+
+**Source:** `services/storage.ts:64-84`
+
+### Delete Timeline
+
+Delete a timeline by ID:
+
+```typescript
+export async function deleteTimeline(id: string): Promise<void>
+```
+
+**Behavior:**
+- Removes timeline from storage
+- If deleted timeline was active, clears active timeline reference
+
+**Example:**
+```typescript
+import { deleteTimeline } from '@/services/storage';
+
+await deleteTimeline('timeline_1709740800000_abc123xyz');
+```
+
+**Source:** `services/storage.ts:90-106`
+
+### Get Timeline by ID
+
+Retrieve a specific timeline:
+
+```typescript
+export async function getTimelineById(id: string): Promise<Timeline | null>
+```
+
+**Returns:** Timeline object or `null` if not found
+
+**Source:** `services/storage.ts:113-121`
+
+### Clear All Timelines
+
+Dangerous operation for testing/development:
+
+```typescript
+export async function clearAllTimelines(): Promise<void>
+```
+
+**Warning:** This removes ALL timelines and clears the active timeline. Use with caution.
+
+**Source:** `services/storage.ts:126-134`
+
+## Active Timeline Operations
+
+### Set Active Timeline
+
+Set a timeline as active (displayed on Home screen):
+
+```typescript
+export async function setActiveTimeline(id: string): Promise<void>
+```
+
+**Behavior:**
+- Updates `ACTIVE_TIMELINE_ID` in storage
+- Sets `isActive: true` on the specified timeline
+- Sets `isActive: false` on all other timelines
+- Syncs data to iOS/Android widgets (non-fatal if fails)
+
+**Example:**
+```typescript
+import { setActiveTimeline } from '@/services/storage';
+
+await setActiveTimeline('timeline_1709740800000_abc123xyz');
+```
+
+**Source:** `services/storage.ts:146-170`
+
+### Get Active Timeline
+
+Retrieve the currently active timeline:
+
+```typescript
+export async function getActiveTimeline(): Promise<Timeline | null>
+```
+
+**Returns:** Active timeline or `null` if none is set
+
+**Example:**
+```typescript
+import { getActiveTimeline } from '@/services/storage';
+
+const activeTimeline = await getActiveTimeline();
+if (activeTimeline) {
+  console.log(`Active: ${activeTimeline.title}`);
+} else {
+  console.log('No active timeline');
+}
+```
+
+**Source:** `services/storage.ts:176-186`
+
+### Get Active Timeline ID
+
+Get just the ID of the active timeline:
+
+```typescript
+export async function getActiveTimelineId(): Promise<string | null>
+```
+
+**Source:** `services/storage.ts:192-199`
+
+### Clear Active Timeline
+
+Remove active timeline selection:
+
+```typescript
+export async function clearActiveTimeline(): Promise<void>
+```
+
+**Behavior:**
+- Removes `ACTIVE_TIMELINE_ID` from storage
+- Sets `isActive: false` on all timelines
+
+**Source:** `services/storage.ts:204-220`
+
+## Settings Operations
+
+### Load Settings
+
+Retrieve app settings with defaults:
+
+```typescript
+export async function loadSettings(): Promise<AppSettings>
+```
+
+**Returns:** App settings (defaults if none exist)
+
+**Default values:**
+```typescript
+{
+  themeMode: 'dark',
+  gridColorTheme: 'classic',
+}
+```
+
+**Source:** `services/storage.ts:230-241`
+
+### Save Settings
+
+Persist app settings:
+
+```typescript
+export async function saveSettings(settings: AppSettings): Promise<void>
+```
+
+**Behavior:**
+- Saves settings to AsyncStorage
+- Syncs to iOS/Android widgets (non-fatal if fails)
+
+**Example:**
+```typescript
+import { saveSettings } from '@/services/storage';
+
+const newSettings = {
+  themeMode: 'dark' as ThemeMode,
+  gridColorTheme: 'forest' as GridColorTheme,
+};
+
+await saveSettings(newSettings);
+```
+
+**Source:** `services/storage.ts:247-261`
+
+### Update Theme Mode
+
+Convenience function for updating theme:
+
+```typescript
+export async function updateThemeMode(mode: ThemeMode): Promise<void>
+```
+
+**Example:**
+```typescript
+import { updateThemeMode } from '@/services/storage';
+
+await updateThemeMode('light');
+```
+
+**Source:** `services/storage.ts:267-276`
+
+### Get Theme Mode
+
+Retrieve current theme mode:
+
+```typescript
+export async function getThemeMode(): Promise<ThemeMode>
+```
+
+**Returns:** Current theme mode (defaults to `'dark'`)
+
+**Source:** `services/storage.ts:282-290`
+
+### Update Grid Color Theme
+
+Change the grid visualization color palette:
+
+```typescript
+export async function updateGridColorTheme(theme: GridColorTheme): Promise<void>
+```
+
+**Available themes:** `'classic'`, `'forest'`, `'sunset'`, `'monochrome'`
+
+**Source:** `services/storage.ts:296-305`
+
+### Get Grid Color Theme
+
+Retrieve current grid color theme:
+
+```typescript
+export async function getGridColorTheme(): Promise<GridColorTheme>
+```
+
+**Source:** `services/storage.ts:311-319`
+
+## Utility Operations
+
+### Clear All Data
+
+Dangerous operation for testing/development:
+
+```typescript
+export async function clearAllData(): Promise<void>
+```
+
+**Warning:** Removes ALL timelines, settings, and active timeline reference. Use only for testing.
+
+**Source:** `services/storage.ts:329-340`
+
+### Get All Keys
+
+Retrieve all storage keys used by the app:
+
+```typescript
+export async function getAllKeys(): Promise<string[]>
+```
+
+**Returns:** Array of keys starting with `@stoic_calendar:`
+
+**Source:** `services/storage.ts:346-354`
+
+### Export Data
+
+Export all data as JSON for debugging or backup:
+
+```typescript
+export async function exportData(): Promise<string>
+```
+
+**Returns:** JSON string with all timelines, settings, and metadata
+
+**Example:**
+```typescript
+import { exportData } from '@/services/storage';
+
+const jsonData = await exportData();
+console.log(jsonData);
+// {
+//   "timelines": [...],
+//   "settings": {...},
+//   "activeTimelineId": "timeline_123",
+//   "exportedAt": "2026-03-03T12:00:00.000Z"
+// }
+```
+
+**Source:** `services/storage.ts:359-377`
+
+## Widget Sync Integration
+
+The storage service automatically syncs data to iOS/Android widgets using a lazy-loaded widget service:
+
+```typescript
+const syncWidgetData = async (type: 'timeline' | 'settings') => {
+  const { syncActiveTimelineToWidget, syncSettingsToWidget } = 
+    await import('@/services/widget-data-service');
+  if (type === 'timeline') {
+    await syncActiveTimelineToWidget();
+  } else {
+    await syncSettingsToWidget();
+  }
+};
+```
+
+**Note:** Widget sync failures are non-fatal and logged as warnings.
+
+**Source:** `services/storage.ts:13-20`
+
+## Error Handling
+
+All storage operations include try-catch blocks and error logging:
+
+```typescript
+try {
+  const data = await AsyncStorage.getItem(STORAGE_KEYS.TIMELINES);
+  // ... operation logic
+} catch (error) {
+  console.error('Error loading timelines:', error);
+  return []; // Safe fallback
+}
+```
+
+Operations that modify data throw errors to the caller, while read operations return safe defaults.
+
+## Firebase Migration Path
+
+The storage layer is structured for easy Firebase migration:
+
+1. **Replace AsyncStorage with Firestore**:
+   - `loadTimelines()` → `collection('timelines').get()`
+   - `saveTimeline()` → `doc('timelines/{id}').set()`
+   - `deleteTimeline()` → `doc('timelines/{id}').delete()`
+
+2. **No data transformation needed**: All data is already in Firebase-compatible format
+
+3. **Add real-time listeners**: Replace async loads with `onSnapshot()` listeners
+
+## Related Documentation
+
+- [Data Model](/architecture/data-model) - Timeline and AppSettings interfaces
+- [Timeline Calculator](/architecture/timeline-calculator) - Business logic for timeline operations

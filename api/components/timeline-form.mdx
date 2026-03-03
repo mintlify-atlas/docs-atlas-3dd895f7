@@ -1,0 +1,313 @@
+---
+title: "TimelineFormDrawer"
+description: "Timeline creation and editing form component"
+---
+
+# TimelineFormDrawer
+
+A modal dialog for creating new timelines or editing existing custom timelines. Features type selection, progressive disclosure of date inputs, and keyboard-aware layout.
+
+## Features
+
+- **Create and Edit modes**: Supports both creating new timelines and editing custom timelines
+- **Timeline type picker**: Choose between Year, Month, Week, or Custom
+- **Progressive disclosure**: Only shows date inputs for custom timelines
+- **Date validation**: Prevents invalid date ranges
+- **Duplicate prevention**: Checks for existing timelines before creating
+- **Keyboard-aware**: Adjusts layout when keyboard is visible
+- **Animated transitions**: Smooth fade and scale animations
+
+## Import
+
+```tsx
+import { TimelineFormDrawer } from '@/components/timeline-form-drawer';
+```
+
+## Props
+
+<ParamField path="visible" type="boolean" required>
+  Controls whether the drawer is visible. When `false`, the drawer is hidden with fade-out animation.
+</ParamField>
+
+<ParamField path="timeline" type="Timeline">
+  Timeline to edit. When provided, the form opens in edit mode:
+  - Type picker is hidden (timeline type cannot be changed)
+  - Form is pre-populated with timeline data
+  - Save updates the existing timeline
+  
+  When `undefined`, the form opens in create mode:
+  - Type picker is visible
+  - Form starts with default values
+  - Save creates a new timeline
+</ParamField>
+
+<ParamField path="onClose" type="() => void" required>
+  Called when the drawer should close. Triggered by:
+  - Cancel button press
+  - Background tap
+  - Modal back gesture (Android)
+</ParamField>
+
+<ParamField path="onSave" type="(timeline: Timeline) => void" required>
+  Called when a timeline is successfully saved. Receives the created or updated timeline object.
+  
+  The component automatically calls `onClose` after `onSave`, so you don't need to close manually.
+</ParamField>
+
+## Usage Examples
+
+### Create New Timeline
+
+```tsx
+import { useState } from 'react';
+import { TimelineFormDrawer } from '@/components/timeline-form-drawer';
+import { saveTimeline } from '@/services/storage';
+
+function TimelineManager() {
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSave = async (timeline: Timeline) => {
+    await saveTimeline(timeline);
+    // Refresh timeline list
+    loadTimelines();
+  };
+
+  return (
+    <>
+      <Button onPress={() => setShowForm(true)}>
+        Create Timeline
+      </Button>
+      
+      <TimelineFormDrawer
+        visible={showForm}
+        onClose={() => setShowForm(false)}
+        onSave={handleSave}
+      />
+    </>
+  );
+}
+```
+
+### Edit Existing Timeline
+
+```tsx
+import { useState } from 'react';
+import { Timeline } from '@/types/timeline';
+
+function EditableTimelineCard({ timeline }: { timeline: Timeline }) {
+  const [editingTimeline, setEditingTimeline] = useState<Timeline | undefined>();
+
+  const handleSave = async (updatedTimeline: Timeline) => {
+    await saveTimeline(updatedTimeline);
+    setEditingTimeline(undefined);
+  };
+
+  return (
+    <>
+      <Button onPress={() => setEditingTimeline(timeline)}>
+        Edit
+      </Button>
+      
+      <TimelineFormDrawer
+        visible={!!editingTimeline}
+        timeline={editingTimeline}
+        onClose={() => setEditingTimeline(undefined)}
+        onSave={handleSave}
+      />
+    </>
+  );
+}
+```
+
+### Complete Integration Example
+
+```tsx
+import { useState, useEffect } from 'react';
+import { View, Button, FlatList } from 'react-native';
+import { TimelineFormDrawer } from '@/components/timeline-form-drawer';
+import { TimelineCard } from '@/components/timeline-card';
+import { Timeline } from '@/types/timeline';
+import { loadTimelines, saveTimeline, setActiveTimeline } from '@/services/storage';
+
+function TimelineScreen() {
+  const [timelines, setTimelines] = useState<Timeline[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingTimeline, setEditingTimeline] = useState<Timeline | undefined>();
+
+  useEffect(() => {
+    loadTimelinesData();
+  }, []);
+
+  const loadTimelinesData = async () => {
+    const data = await loadTimelines();
+    setTimelines(data);
+  };
+
+  const handleSave = async (timeline: Timeline) => {
+    await saveTimeline(timeline);
+    await setActiveTimeline(timeline.id);
+    await loadTimelinesData();
+  };
+
+  const handleEdit = (timeline: Timeline) => {
+    setEditingTimeline(timeline);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Button onPress={() => setShowForm(true)}>
+        Create Timeline
+      </Button>
+
+      <FlatList
+        data={timelines}
+        renderItem={({ item }) => (
+          <TimelineCard
+            timeline={item}
+            onEdit={handleEdit}
+          />
+        )}
+        keyExtractor={(item) => item.id}
+      />
+
+      <TimelineFormDrawer
+        visible={showForm || !!editingTimeline}
+        timeline={editingTimeline}
+        onClose={() => {
+          setShowForm(false);
+          setEditingTimeline(undefined);
+        }}
+        onSave={handleSave}
+      />
+    </View>
+  );
+}
+```
+
+## Form Fields
+
+### Timeline Type Picker (Create Mode Only)
+
+Four type options:
+- **Year**: Current year timeline (auto-calculated dates)
+- **Month**: Current month timeline (auto-calculated dates)
+- **Week**: Current week timeline (Monday-Sunday, auto-updates)
+- **Custom**: User-defined date range (shows date inputs)
+
+### Custom Timeline Fields
+
+Shown when:
+- Creating a custom timeline (type === 'custom'), OR
+- Editing any timeline (edit mode)
+
+**Title**
+- Text input
+- Placeholder: "Enter timeline name"
+- Max length: 80 characters
+
+**Start Date**
+- Date picker button
+- Shows formatted date: "Month Day, Year"
+- Maximum date: End date (cannot start after end)
+
+**End Date**
+- Date picker button  
+- Shows formatted date: "Month Day, Year"
+- Minimum date: Start date (cannot end before start)
+
+## Behavior
+
+### Create Mode
+
+When `timeline` prop is undefined:
+
+1. **Type Selection**: User selects Year, Month, Week, or Custom
+2. **Auto-calculated Types**: Year/Month/Week automatically generate dates
+3. **Custom Type**: Shows title and date inputs
+4. **Duplicate Check**: Prevents creating duplicate Year/Month/Week timelines
+5. **New Timeline**: Creates timeline with `isActive: true`
+
+```tsx
+const newTimeline = createTimeline(TimelineType.YEAR, {
+  isActive: true,
+});
+```
+
+### Edit Mode
+
+When `timeline` prop is provided:
+
+1. **Type Locked**: Type picker is hidden (cannot change timeline type)
+2. **Pre-filled Form**: Title and dates populate from timeline
+3. **Preserves ID**: Updates existing timeline instead of creating new
+4. **Preserves Active Status**: Maintains `isActive` flag
+
+```tsx
+const updatedTimeline = {
+  ...timeline,
+  title: customTitle || timeline.title,
+  startDate: customStartDate.toISOString(),
+  endDate: customEndDate.toISOString(),
+};
+```
+
+### Duplicate Prevention
+
+Before creating Year/Month/Week timelines, the form checks for duplicates:
+
+- **Year**: Checks for existing year timeline with same year
+- **Month**: Checks for existing month timeline with same year and month
+- **Week**: Checks for any existing week timeline
+- **Custom**: No duplicate check (allows multiple custom timelines)
+
+If duplicate found, shows alert and prevents creation.
+
+### Date Picker Platform Differences
+
+**iOS**:
+- Picker remains visible in edit mode
+- Uses "spinner" display style
+- Integrated into form layout
+
+**Android**:
+- Picker auto-closes after selection
+- Uses native date picker dialog
+- Separate from form layout
+
+### Animation Sequence
+
+**Opening**:
+1. Background fades from 0 to 1 opacity (200ms)
+2. Dialog scales from 0.98 to 1.0 (200ms)
+3. Both animations run in parallel
+
+**Closing**:
+1. Background fades from 1 to 0 opacity (150ms)
+2. Dialog opacity follows background
+3. Scale resets to 0.98 after fade completes
+
+### Keyboard Handling
+
+- Uses `KeyboardAvoidingView` with platform-specific behavior
+- iOS: Padding behavior (shifts dialog up)
+- Android: Height behavior (resizes dialog)
+- Dialog remains centered and accessible when keyboard is visible
+
+## Validation
+
+### Date Range Validation
+
+- Start date cannot be after end date (enforced by date picker `maximumDate`)
+- End date cannot be before start date (enforced by date picker `minimumDate`)
+- Invalid ranges are prevented at picker level
+
+### Required Fields
+
+- **Custom timelines**: Title defaults to "Custom Timeline" if empty
+- **Pre-defined types**: Title and dates are auto-generated
+
+## Related Components
+
+- [TimelineCard](/api/components/timeline-card) - Triggers edit mode
+- Timeline Calculator Service - Creates timeline objects
+- Storage Service - Saves and validates timelines
